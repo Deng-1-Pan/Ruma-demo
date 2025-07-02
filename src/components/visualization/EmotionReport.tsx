@@ -375,7 +375,7 @@ const EmotionReport: React.FC<EmotionReportProps> = ({
           )}
 
           {/* 图表区域 */}
-          <div style={{ marginBottom: responsiveStyles.cardStyle.marginBottom }}>
+          <div style={{ marginBottom: isMobile ? '48px' : responsiveStyles.cardStyle.marginBottom }}>
             {/* 主要情绪变化趋势 - 全宽显示 */}
             <div style={{ marginBottom: isMobile ? '8px' : '16px' }}>
               <EmotionChart 
@@ -388,14 +388,15 @@ const EmotionReport: React.FC<EmotionReportProps> = ({
             </div>
             
             {/* 情绪分布 - 全宽显示 */}
-            <div>
+            <div style={{ marginBottom: isMobile ? '40px' : '0px' }}>
               <EmotionDistribution 
                 data={data.distribution}
                 title={isMobile ? "分布" : "情绪分布"}
-                height={componentConfig.chart.height}
+                height={isMobile ? 600 : componentConfig.chart.height}
                 timeRange={currentTimeRange}
                 onTimeRangeChange={handleTimeRangeChange}
                 useOSSData={false}
+                showLegend={false}
               />
             </div>
           </div>
@@ -403,7 +404,11 @@ const EmotionReport: React.FC<EmotionReportProps> = ({
           {/* 个性化建议 */}
           <Card 
             title={isMobile ? "💡 建议" : "💡 个性化建议"} 
-            style={responsiveStyles.cardStyle}
+            style={{
+              ...responsiveStyles.cardStyle,
+              marginTop: isMobile ? '32px' : '0px',
+              paddingTop: isMobile ? '8px' : '0px'
+            }}
           >
             <div style={{ 
               background: '#f9f9f9', 

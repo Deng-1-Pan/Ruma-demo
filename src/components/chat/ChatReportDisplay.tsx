@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Card, Typography, Row, Col, Space, Divider } from 'antd';
 import { HeartOutlined, BulbOutlined } from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
@@ -32,6 +32,21 @@ const ChatReportDisplay: React.FC<ChatReportDisplayProps> = ({
   report,
   className
 }) => {
+  // 响应式检测
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    // 初始检测
+    checkMobile();
+    
+    // 监听窗口大小变化
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   // 转换情绪分布数据为EmotionDistribution组件所需格式
   const emotionDistributionData = useMemo(() => {
     const distribution: Record<string, number> = {};
@@ -120,9 +135,13 @@ const ChatReportDisplay: React.FC<ChatReportDisplayProps> = ({
         title={
           <div className="report-header">
             <Space align="center">
-              <HeartOutlined className="report-icon" />
-              <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
-                💝 本次聊天情绪分析报告
+              <HeartOutlined className="report-icon" style={{ fontSize: isMobile ? '18px' : '20px' }} />
+              <Title level={4} style={{ 
+                margin: 0, 
+                color: '#1890ff',
+                fontSize: isMobile ? '18px' : '20px'
+              }}>
+                💝 {isMobile ? '聊天情绪分析' : '本次聊天情绪分析报告'}
               </Title>
             </Space>
           </div>
@@ -131,31 +150,35 @@ const ChatReportDisplay: React.FC<ChatReportDisplayProps> = ({
       >
         {/* 聊天总结 */}
         {report.summary && (
-          <div className="summary-section">
-                         <Title level={5} className="section-title">
-               <BulbOutlined /> 聊天总结
-             </Title>
+          <div className="summary-section" style={{ marginBottom: isMobile ? '16px' : '24px' }}>
+            <Title level={5} className="section-title" style={{ fontSize: isMobile ? '16px' : '18px', marginBottom: isMobile ? '12px' : '16px' }}>
+              <BulbOutlined /> 聊天总结
+            </Title>
             <Card size="small" className="summary-card">
-              <div className="summary-text">
+              <div className="summary-text" style={{ 
+                fontSize: isMobile ? '14px' : '15px',
+                lineHeight: isMobile ? '1.5' : '1.6',
+                padding: isMobile ? '4px 0' : '8px 0'
+              }}>
                 <ReactMarkdown>{report.summary}</ReactMarkdown>
               </div>
             </Card>
-            <Divider />
+            <Divider style={{ margin: isMobile ? '16px 0' : '24px 0' }} />
           </div>
         )}
 
         {/* 情绪分布和图谱 */}
-        <Row gutter={[24, 24]}>
+        <Row gutter={[isMobile ? 16 : 24, isMobile ? 16 : 24]} style={{ marginBottom: isMobile ? '32px' : '16px' }}>
           {/* 情绪分布饼图 */}
           <Col xs={24} lg={12}>
             <div className="chart-section">
-              <Title level={5} className="section-title">
+              <Title level={5} className="section-title" style={{ fontSize: isMobile ? '16px' : '18px' }}>
                 📊 情绪分布分析
               </Title>
               <EmotionDistribution
                 data={emotionDistributionData}
                 title=""
-                height={350}
+                height={isMobile ? 550 : 350}
                 showStats={true}
                 showControls={false}
                 useOSSData={false}
@@ -166,15 +189,15 @@ const ChatReportDisplay: React.FC<ChatReportDisplayProps> = ({
 
           {/* 情绪知识图谱 */}
           <Col xs={24} lg={12}>
-            <div className="chart-section">
-              <Title level={5} className="section-title">
+            <div className="chart-section" style={{ marginBottom: isMobile ? '24px' : '0px' }}>
+              <Title level={5} className="section-title" style={{ fontSize: isMobile ? '16px' : '18px' }}>
                 🧠 情绪关联图谱
               </Title>
               <InteractiveEmotionGraph
                 data={knowledgeGraphData}
                 title=""
-                height={350}
-                width={400}
+                height={isMobile ? 300 : 350}
+                width={isMobile ? undefined : 400}
               />
             </div>
           </Col>
@@ -183,18 +206,86 @@ const ChatReportDisplay: React.FC<ChatReportDisplayProps> = ({
         {/* 原因分析 */}
         {report.detected_emotions && report.detected_emotions.some(e => e.causes.length > 0) && (
           <>
-            <Divider />
-            <div className="causes-section">
-              <Title level={5} className="section-title">
+            <Divider style={{ margin: isMobile ? '32px 0' : '16px 0' }} />
+            <div className="causes-section" style={{ 
+              marginTop: isMobile ? '24px' : '0px',
+              paddingBottom: isMobile ? '24px' : '16px'
+            }}>
+              <Title level={5} className="section-title" style={{ 
+                fontSize: isMobile ? '16px' : '18px',
+                marginBottom: isMobile ? '16px' : '12px'
+              }}>
                 🔍 情绪原因分析
               </Title>
-              <div className="causes-list">
+              <div style={{ 
+                display: 'flex',
+                flexDirection: 'column',
+                gap: isMobile ? '8px' : '6px',
+                maxHeight: isMobile ? '280px' : '180px',
+                overflowY: 'auto',
+                padding: '2px',
+                border: isMobile ? '1px solid #f0f0f0' : 'none',
+                borderRadius: isMobile ? '8px' : '0px'
+              }}>
                 {report.detected_emotions.map((emotionInfo, index) => 
                   emotionInfo.causes.map((causeInfo, causeIndex) => (
-                    <Card key={`${index}_${causeIndex}`} size="small" className="cause-card">
-                      <Text strong>{emotionInfo.emotion_cn || emotionInfo.emotion}：</Text>
-                      <Text>{causeInfo.cause} - {causeInfo.description}</Text>
-                    </Card>
+                    <div 
+                      key={`${index}_${causeIndex}`} 
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        padding: isMobile ? '10px 12px' : '8px 12px',
+                        backgroundColor: '#fafafa',
+                        borderRadius: '8px',
+                        borderLeft: '4px solid #1890ff',
+                        gap: isMobile ? '8px' : '6px'
+                      }}
+                    >
+                      <div style={{
+                        backgroundColor: '#1890ff',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: isMobile ? '20px' : '18px',
+                        height: isMobile ? '20px' : '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: isMobile ? '12px' : '10px',
+                        fontWeight: 'bold',
+                        flexShrink: 0,
+                        marginTop: '2px'
+                      }}>
+                        {index + 1}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{
+                          fontWeight: 'bold',
+                          color: '#1890ff',
+                          fontSize: isMobile ? '14px' : '13px',
+                          marginBottom: '4px',
+                          lineHeight: '1.3'
+                        }}>
+                          {emotionInfo.emotion_cn || emotionInfo.emotion}
+                        </div>
+                        <div style={{
+                          fontSize: isMobile ? '13px' : '12px',
+                          color: '#333',
+                          lineHeight: '1.4',
+                          marginBottom: '2px'
+                        }}>
+                          <Text strong style={{ color: '#666' }}>原因：</Text>
+                          {causeInfo.cause}
+                        </div>
+                        <div style={{
+                          fontSize: isMobile ? '12px' : '11px',
+                          color: '#666',
+                          lineHeight: '1.4'
+                        }}>
+                          <Text strong style={{ color: '#999' }}>说明：</Text>
+                          {causeInfo.description}
+                        </div>
+                      </div>
+                    </div>
                   ))
                 )}
               </div>

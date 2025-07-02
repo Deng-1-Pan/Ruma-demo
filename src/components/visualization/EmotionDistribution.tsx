@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { Card, Typography, Row, Col, Statistic, Select, Space } from 'antd';
 import { EMOTION_COLORS, EMOTION_EMOJIS, EMOTION_CATEGORY_MAP, EMOTION_CHINESE_MAP, useEmotionAnalysisStore } from '../../stores/emotionAnalysisStore';
@@ -39,6 +39,21 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
   useOSSData = false,
   showLegend = true
 }) => {
+  // 响应式检测
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    // 初始检测
+    checkMobile();
+    
+    // 监听窗口大小变化
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   // 🎯 修复：使用统一的情绪配置系统
   const getEmotionConfig = (emotion: string) => {
     const category = EMOTION_CATEGORY_MAP[emotion] || 'neutral';
@@ -275,8 +290,8 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
               series: [
         {
           type: 'pie',
-          radius: ['40%', '70%'],
-          center: showLegend ? ['60%', '50%'] : ['50%', '50%'],  // 有图例时右偏，无图例时居中
+          radius: isMobile ? ['35%', '65%'] : ['40%', '70%'],
+          center: showLegend ? ['60%', '50%'] : (isMobile ? ['50%', '45%'] : ['50%', '50%']),  // 移动端饼图上移
           avoidLabelOverlap: false,
           label: {
             show: false,
@@ -352,12 +367,12 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
           // 🎯 有数据时的正常显示
           <>
             {showStats && (
-              <Row gutter={16} style={{ marginBottom: '16px' }}>
+              <Row gutter={16} style={{ marginBottom: isMobile ? '12px' : '16px' }}>
                 <Col span={8}>
                   <Statistic 
                     title="总记录数" 
                     value={totalCount}
-                    valueStyle={{ fontSize: '18px', color: '#1890ff' }}
+                    valueStyle={{ fontSize: isMobile ? '16px' : '18px', color: '#1890ff' }}
                     suffix="条"
                   />
                 </Col>
@@ -366,11 +381,11 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
                     title="主要情绪" 
                     value={dominantEmotion?.config.name || '无'}
                     valueStyle={{ 
-                      fontSize: '16px', 
+                      fontSize: isMobile ? '14px' : '16px', 
                       color: dominantEmotion?.config.color || '#666',
                       fontWeight: 'bold'
                     }}
-                    prefix={<span style={{ fontSize: '20px' }}>{dominantEmotion?.config.emoji}</span>}
+                    prefix={<span style={{ fontSize: isMobile ? '18px' : '20px' }}>{dominantEmotion?.config.emoji}</span>}
                   />
                 </Col>
                 <Col span={8}>
@@ -379,7 +394,7 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
                     value={dominantEmotion?.percentage.toFixed(1) || '0'}
                     suffix="%"
                     valueStyle={{ 
-                      fontSize: '18px',
+                      fontSize: isMobile ? '16px' : '18px',
                       color: dominantEmotion?.config.color || '#666'
                     }}
                   />
@@ -388,7 +403,7 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
             )}
             
             {/* 图表区域 - 移除右边的情绪详情，饼图占满整个区域 */}
-            <div style={{ height: showStats ? height - 160 : height - 80 }}>
+            <div style={{ height: showStats ? (isMobile ? height - 280 : height - 160) : (isMobile ? height - 200 : height - 80) }}>
               <ReactECharts 
                 option={chartOption} 
                 style={{ height: '100%', width: '100%' }}
@@ -398,16 +413,27 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
             
             {/* 情绪分布详情列表 */}
             {distributionData.length > 1 && (
-              <div style={{ marginTop: '16px' }}>
-                <Title level={5} style={{ marginBottom: '12px', color: '#666' }}>
+              <div style={{ 
+                marginTop: isMobile ? '20px' : '16px',
+                paddingBottom: isMobile ? '20px' : '10px'
+              }}>
+                <Title level={5} style={{ 
+                  marginBottom: isMobile ? '12px' : '12px', 
+                  color: '#666',
+                  fontSize: isMobile ? '16px' : '18px'
+                }}>
                   📋 详细分布
                 </Title>
                 <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                  gap: '8px',
-                  maxHeight: '120px',
-                  overflowY: 'auto'
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                  height: isMobile ? '180px' : '120px',
+                  overflowY: 'auto',
+                  marginBottom: isMobile ? '16px' : '0px',
+                  border: isMobile ? '1px solid #f0f0f0' : 'none',
+                  borderRadius: isMobile ? '6px' : '0px',
+                  padding: isMobile ? '8px' : '0px'
                 }}>
                   {distributionData.map((item) => (
                     <div 
@@ -415,23 +441,54 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        padding: '6px 12px',
+                        justifyContent: 'space-between',
+                        padding: isMobile ? '8px 12px' : '6px 12px',
                         backgroundColor: '#fafafa',
                         borderRadius: '6px',
                         borderLeft: `4px solid ${item.config.color}`,
-                        fontSize: '13px'
+                        fontSize: isMobile ? '14px' : '13px',
+                        minHeight: isMobile ? '44px' : '36px'
                       }}
                     >
-                      <span style={{ fontSize: '16px', marginRight: '8px' }}>
-                        {item.config.emoji}
-                      </span>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 'bold', color: item.config.color }}>
-                          {item.config.name}
+                      <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                        <span style={{ 
+                          fontSize: isMobile ? '18px' : '16px', 
+                          marginRight: isMobile ? '12px' : '8px',
+                          flexShrink: 0
+                        }}>
+                          {item.config.emoji}
+                        </span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ 
+                            fontWeight: 'bold', 
+                            color: item.config.color,
+                            fontSize: isMobile ? '15px' : '13px',
+                            lineHeight: '1.2',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {item.config.name}
+                          </div>
+                          <div style={{ 
+                            color: '#666',
+                            fontSize: isMobile ? '12px' : '11px',
+                            lineHeight: '1.2',
+                            marginTop: '2px'
+                          }}>
+                            {item.count}次
+                          </div>
                         </div>
-                        <div style={{ color: '#666' }}>
-                          {item.count}次 ({item.percentage.toFixed(1)}%)
-                        </div>
+                      </div>
+                      <div style={{ 
+                        fontWeight: 'bold',
+                        color: item.config.color,
+                        fontSize: isMobile ? '16px' : '14px',
+                        minWidth: isMobile ? '50px' : '45px',
+                        textAlign: 'right',
+                        flexShrink: 0
+                      }}>
+                        {item.percentage.toFixed(1)}%
                       </div>
                     </div>
                   ))}
