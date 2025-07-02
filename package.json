@@ -23,12 +23,15 @@
     "docker:build": "docker build -t ruma-demo .",
     "docker:build:light": "docker build -f Dockerfile.light -t ruma-demo-light .",
     "docker:build:minimal": "docker build -f Dockerfile.minimal -t ruma-demo-minimal .",
+    "docker:build:ultra": "docker build -f Dockerfile.ultra-light -t ruma-demo-ultra .",
     "docker:run": "docker run -d -p 80:80 --name ruma-demo-app ruma-demo",
     "docker:run:light": "docker run -d -p 80:80 --name ruma-demo-app ruma-demo-light",
     "docker:run:minimal": "docker run -d -p 80:80 --name ruma-demo-app ruma-demo-minimal",
+    "docker:run:ultra": "docker run -d -p 80:80 --name ruma-demo-app ruma-demo-ultra",
     "docker:stop": "docker stop ruma-demo-app && docker rm ruma-demo-app",
     "docker:deploy:light": "bash quick-deploy-light.sh",
-    "docker:deploy:minimal": "bash deploy-minimal.sh"
+    "docker:deploy:minimal": "bash deploy-minimal.sh",
+    "docker:deploy:ultra": "bash deploy-ultra-light.sh"
   },
   "dependencies": {
     "@types/d3": "^7.4.3",

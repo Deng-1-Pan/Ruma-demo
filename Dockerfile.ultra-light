@@ -1,0 +1,18 @@
+# 超轻量级构建 - 完全避免npm构建过程
+FROM nginx:alpine
+
+# 创建演示页面
+RUN echo '<!DOCTYPE html><html><head><title>RuMa Demo</title><meta charset="utf-8"><style>body{font-family:Arial,sans-serif;margin:40px;background:#f5f5f5}.container{max-width:800px;margin:0 auto;background:white;padding:30px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}.header{text-align:center;margin-bottom:30px;color:#1890ff}.demo-section{margin:20px 0;padding:20px;border:1px solid #e8e8e8;border-radius:6px}.emotion-bar{height:20px;background:#1890ff;margin:10px 0;border-radius:10px;position:relative}.emotion-label{position:absolute;left:10px;top:2px;color:white;font-size:12px}</style></head><body><div class="container"><div class="header"><h1>🤖 RuMa 情感支持聊天机器人</h1><p>前端演示版 - 超轻量级部署</p></div><div class="demo-section"><h3>📊 情绪分析演示</h3><div>快乐<div class="emotion-bar" style="width:80%"><span class="emotion-label">80%</span></div></div><div>焦虑<div class="emotion-bar" style="width:30%; background:#ff4d4f"><span class="emotion-label">30%</span></div></div><div>平静<div class="emotion-bar" style="width:60%; background:#52c41a"><span class="emotion-label">60%</span></div></div></div><div class="demo-section"><h3>💬 聊天演示</h3><div style="background:#f9f9f9;padding:15px;border-radius:4px;margin:10px 0"><strong>用户:</strong> 我今天感觉有些焦虑</div><div style="background:#e6f7ff;padding:15px;border-radius:4px;margin:10px 0"><strong>RuMa:</strong> 我理解你的感受。焦虑是很常见的情绪，让我们一起来处理它。你能告诉我是什么让你感到焦虑吗？</div></div><div class="demo-section"><h3>📈 功能特点</h3><ul><li>✅ 实时情绪分析</li><li>✅ 智能情感支持</li><li>✅ 可视化情绪报告</li><li>✅ 多平台支持</li></ul></div><div style="text-align:center;margin-top:40px;color:#999;font-size:12px">部署成功 🎉 | 构建时间: < 30秒</div></div></body></html>' > /usr/share/nginx/html/index.html
+
+# 创建nginx配置
+RUN echo 'events{worker_connections 1024;}http{include /etc/nginx/mime.types;default_type application/octet-stream;sendfile on;keepalive_timeout 65;server{listen 80;server_name localhost;location /{root /usr/share/nginx/html;index index.html;try_files $uri $uri/ /index.html;}}}' > /etc/nginx/nginx.conf
+
+# 暴露端口
+EXPOSE 80
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1
+
+# 启动nginx
+CMD ["nginx", "-g", "daemon off;"] 

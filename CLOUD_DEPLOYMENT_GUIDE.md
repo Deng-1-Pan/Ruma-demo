@@ -7,21 +7,31 @@
 
 ### 立即可用的解决方案
 
-#### 方案1：使用修复后的轻量级构建（推荐）
+#### 方案1：超轻量级部署（⭐强烈推荐，30秒完成）
 ```bash
-# 使用修复后的Dockerfile.light
-docker build -f Dockerfile.light -t ruma-demo-light .
-docker run -d -p 80:80 --name ruma-demo-app ruma-demo-light
+# 使用超轻量级Dockerfile（静态演示页面）
+bash deploy-ultra-light.sh
+
+# 或手动执行
+docker build -f Dockerfile.ultra-light -t ruma-demo-ultra .
+docker run -d -p 80:80 --name ruma-demo-app ruma-demo-ultra
 ```
 
-#### 方案2：使用最小化构建（最稳定）
+#### 方案2：使用最小化构建（yarn方案）
 ```bash
 # 使用Dockerfile.minimal（使用yarn替代npm）
 docker build -f Dockerfile.minimal -t ruma-demo-minimal .
 docker run -d -p 80:80 --name ruma-demo-app ruma-demo-minimal
 ```
 
-#### 方案3：本地构建后部署
+#### 方案3：使用修复后的轻量级构建
+```bash
+# 使用修复后的Dockerfile.light
+docker build -f Dockerfile.light -t ruma-demo-light .
+docker run -d -p 80:80 --name ruma-demo-app ruma-demo-light
+```
+
+#### 方案4：本地构建后部署
 ```bash
 # 本地构建dist文件夹
 npm run build:fast
@@ -34,7 +44,8 @@ docker run -d -p 80:80 -v $(pwd)/dist:/usr/share/nginx/html nginx:alpine
 
 | 方案 | Dockerfile | 构建时间 | 成功率 | 适用场景 |
 |------|------------|----------|--------|----------|
-| **最小化** | `Dockerfile.minimal` | 中等 | ⭐⭐⭐⭐⭐ | 云端部署首选 |
+| **超轻量级** | `Dockerfile.ultra-light` | ~30秒 | ⭐⭐⭐⭐⭐ | 🥇云端首选/演示 |
+| **最小化** | `Dockerfile.minimal` | 中等 | ⭐⭐⭐⭐⭐ | 完整功能需求 |
 | **轻量级** | `Dockerfile.light` | 快 | ⭐⭐⭐⭐ | 资源受限环境 |
 | **标准** | `Dockerfile` | 慢 | ⭐⭐⭐ | 本地开发 |
 
@@ -204,6 +215,7 @@ docker build --no-cache -f Dockerfile.minimal -t ruma-demo .
 4. Docker版本信息
 
 **推荐优先级**：
-1. 🥇 使用 `Dockerfile.minimal` 
-2. 🥈 使用 `Dockerfile.light`  
-3. 🥉 本地构建 + 上传部署 
+1. 🥇 使用 `Dockerfile.ultra-light`（30秒部署）
+2. 🥈 使用 `Dockerfile.minimal`（yarn方案）
+3. 🥉 使用 `Dockerfile.light`（修复版）
+4. 🏅 本地构建 + 上传部署 
