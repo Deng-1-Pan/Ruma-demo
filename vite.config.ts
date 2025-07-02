@@ -31,20 +31,35 @@ export default defineConfig({
     terserOptions: {
       compress: {
         drop_console: true,
-        drop_debugger: true
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        passes: 2
       }
     },
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          antd: ['antd'],
-          charts: ['echarts', 'echarts-for-react', 'd3'],
-          plotly: ['plotly.js-dist-min', 'react-plotly.js']
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-antd': ['antd'],
+          'vendor-charts': ['echarts', 'echarts-for-react'],
+          'vendor-d3': ['d3'],
+          'vendor-plotly': ['plotly.js-dist-min', 'react-plotly.js'],
+          'vendor-utils': ['axios', 'dayjs', 'zustand']
+        },
+        chunkFileNames: 'js/[name]-[hash:8].js',
+        entryFileNames: 'js/[name]-[hash:8].js',
+        assetFileNames: (assetInfo) => {
+          const ext = assetInfo.name?.split('.').pop() || '';
+          if (['css'].includes(ext)) {
+            return 'css/[name]-[hash:8].[ext]';
+          }
+          return 'assets/[name]-[hash:8].[ext]';
         }
       }
     },
-    chunkSizeWarningLimit: 1000,
-    reportCompressedSize: false
+    chunkSizeWarningLimit: 500,
+    reportCompressedSize: false,
+    target: 'es2015',
+    cssCodeSplit: true
   }
 }) 

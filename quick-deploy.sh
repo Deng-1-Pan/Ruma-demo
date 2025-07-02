@@ -11,9 +11,9 @@ echo "🚀 === RuMa Demo 快速部署开始 ==="
 echo "📊 检查系统资源..."
 free -h
 
-# 设置Node.js内存限制
-export NODE_OPTIONS="--max-old-space-size=4096"
-echo "⚙️  设置Node.js内存限制: $NODE_OPTIONS"
+# 设置Node.js内存限制 - 针对2GB服务器优化
+export NODE_OPTIONS="--max-old-space-size=1536"
+echo "⚙️  设置Node.js内存限制: $NODE_OPTIONS (针对2GB服务器优化)"
 
 # 清理旧的构建缓存
 echo "🧹 清理构建缓存..."
@@ -25,30 +25,53 @@ if [ ! -d "node_modules" ]; then
     npm ci --only=production --no-audit --no-fund
 fi
 
-# 智能选择构建方式
+# 智能选择构建方式 - 针对2GB服务器调整阈值
 echo "🔨 开始构建项目..."
 TOTAL_MEM=$(free -m | awk 'NR==2{print $2}')
+AVAILABLE_MEM=$(free -m | awk 'NR==2{print $7}')
 echo "💾 系统总内存: ${TOTAL_MEM}MB"
+echo "💾 可用内存: ${AVAILABLE_MEM}MB"
 
-if [ $TOTAL_MEM -gt 4000 ]; then
-    echo "✅ 内存充足，使用标准构建"
-    npm run build:optimized
-elif [ $TOTAL_MEM -gt 2000 ]; then
-    echo "⚠️  内存有限，使用快速构建"
-    npm run build:fast
+if [ $AVAILABLE_MEM -gt 1200 ]; then
+    echo "✅ 可用内存充足，使用2GB优化构建"
+    npm run build:2gb
+elif [ $AVAILABLE_MEM -gt 800 ]; then
+    echo "⚠️  内存紧张，使用轻量构建"
+    npm run build:light
 else
-    echo "🚨 内存不足，使用轻量构建"
+    echo "🚨 内存严重不足，释放内存后使用最小构建"
+    # 释放系统缓存
+    sudo sync && sudo sysctl -w vm.drop_caches=3 || true
+    export NODE_OPTIONS="--max-old-space-size=1024"
     npm run build:light
 fi
 
 # 检查构建结果
 if [ ! -d "dist" ]; then
     echo "❌ 构建失败：dist目录不存在"
-    exit 1
+    echo "💡 尝试清理并重新构建..."
+    rm -rf node_modules/.vite
+    npm run build:light
+    if [ ! -d "dist" ]; then
+        echo "❌ 重新构建仍失败，请检查系统资源"
+        exit 1
+    fi
 fi
 
 echo "✅ 构建完成！"
 ls -lah dist/
+
+# 显示构建结果大小（针对1Mbps带宽优化提醒）
+DIST_SIZE=$(du -sh dist/ | cut -f1)
+echo "📦 构建包大小: $DIST_SIZE"
+if [ -d "dist/js" ]; then
+    echo "📄 JavaScript文件:"
+    ls -lah dist/js/ | head -5
+fi
+if [ -d "dist/css" ]; then
+    echo "🎨 CSS文件:"
+    ls -lah dist/css/ | head -3
+fi
 
 # 安装PM2（如果未安装）
 if ! command -v pm2 &> /dev/null; then
