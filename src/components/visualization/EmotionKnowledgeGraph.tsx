@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import * as d3 from 'd3';
 import type { EmotionKnowledgeGraph, EmotionGraphNode, EmotionGraphEdge } from '../../types/emotion';
 import { EMOTION_EMOJIS, EMOTION_CHINESE_MAP } from '../../stores/emotionAnalysisStore';
+import { useResponsive, getComponentResponsiveConfig } from '../../utils/responsiveUtils';
 import '../../styles/components/EmotionKnowledgeGraph.css';
 
 const { Title, Text } = Typography;
@@ -37,24 +38,94 @@ interface D3Edge extends Omit<EmotionGraphEdge, 'source' | 'target'> {
 const EmotionKnowledgeGraph: React.FC<EmotionKnowledgeGraphProps> = ({
   data,
   title = '情绪关系图谱',
-  // width = 900,  // 不再使用固定宽度，完全自适应
-  // height = 650, // 不再使用固定高度，完全自适应
   className
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const simulationRef = useRef<d3.Simulation<D3Node, D3Edge> | null>(null);
   const containerRef = useRef<SVGGElement | null>(null);
-  // 🎯 移除预计算的尺寸状态，完全依赖SVG真实渲染尺寸
-  const [forceUpdate, setForceUpdate] = useState(0); // 用于触发重渲染
+  const [forceUpdate, setForceUpdate] = useState(0);
+  
+  // 🎯 使用响应式工具
+  const { deviceType, isMobile } = useResponsive();
+  const componentConfig = getComponentResponsiveConfig(deviceType);
+  
+  // 🎯 根据设备类型计算响应式参数
+  const responsiveParams = useMemo(() => {
+    // 🚀 强制检测移动端 - 多重判断
+    const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    const isTrulyMobile = screenWidth < 768 || isMobile || /Mobi|Android/i.test(navigator.userAgent);
+    
+    console.log('📱 [Debug] 设备检测:', {
+      screenWidth,
+      isMobile,
+      isTrulyMobile,
+      deviceType,
+      userAgent: navigator.userAgent
+    });
+    
+    // 移动端使用固定的极小尺寸但松散布局
+    if (isTrulyMobile) {
+      console.log('📱 [Debug] 使用移动端松散布局参数');
+      return {
+        // 节点相关 - 移动端极小尺寸
+        emotionNodeRadius: 3,    // 更小3px半径
+        causeNodeRadius: 2,      // 更小2px半径
+        emojiFontSize: 8,        // 稍大字体保持可见
+        labelFontSize: 6,        // 极小标签
+        labelOffset: 8,          // 极小偏移
+        
+        // 碰撞检测 - 松散布局
+        emotionCollisionRadius: 12,  // 增加碰撞半径，避免重叠
+        causeCollisionRadius: 10,    // 增加碰撞半径
+        
+        // 力学参数 - 松散但稳定布局
+        linkDistance: 50,        // 增加连接距离，更松散
+        chargeStrength: -150,    // 增加斥力，推开节点
+        
+        // 显示控制
+        showLabels: false,       // 移动端强制隐藏标签
+        enableDrag: false        // 移动端禁用拖拽
+      };
+    }
+    
+    // 其他设备使用相对计算
+    const baseNodeSize = componentConfig.knowledgeGraph.nodeSize;
+    const scaleFactor = deviceType === 'tablet' ? 0.6 : 1;
+    
+    return {
+      // 节点相关
+      emotionNodeRadius: baseNodeSize * 0.4 * scaleFactor,
+      causeNodeRadius: baseNodeSize * 0.35 * scaleFactor,
+      emojiFontSize: Math.min(baseNodeSize * 0.25 * scaleFactor, 12),
+      labelFontSize: 12,
+      labelOffset: baseNodeSize * 0.5 * scaleFactor + 15,
+      
+      // 碰撞检测
+      emotionCollisionRadius: baseNodeSize * 0.25 * scaleFactor,
+      causeCollisionRadius: baseNodeSize * 0.2 * scaleFactor,
+      
+      // 力学参数
+      linkDistance: deviceType === 'tablet' ? 100 : 180,
+      chargeStrength: deviceType === 'tablet' ? -300 : -600,
+      
+      // 显示控制
+      showLabels: componentConfig.knowledgeGraph.showLabels,
+      enableDrag: componentConfig.knowledgeGraph.enableDrag
+    };
+  }, [deviceType, isMobile, componentConfig]);
+  
+  // 统一的移动端检测
+  const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+  const isTrulyMobile = screenWidth < 768 || isMobile || /Mobi|Android/i.test(navigator.userAgent);
   
   // 交互状态
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showLabels, setShowLabels] = useState(true);
+  const [showLabels, setShowLabels] = useState(isTrulyMobile ? false : responsiveParams.showLabels);
   const [strengthThreshold, setStrengthThreshold] = useState(0.1);
-  const [linkDistance, setLinkDistance] = useState(180);
-  const [chargeStrength, setChargeStrength] = useState(-600);
+  const [linkDistance, setLinkDistance] = useState(responsiveParams.linkDistance);
+  const [chargeStrength, setChargeStrength] = useState(responsiveParams.chargeStrength);
   
   // Tooltip状态
   const [tooltip, setTooltip] = useState<{
@@ -100,7 +171,7 @@ const EmotionKnowledgeGraph: React.FC<EmotionKnowledgeGraphProps> = ({
     return { nodes: filteredNodes, edges: baseFilteredData.edges };
   }, [baseFilteredData, searchTerm]);
 
-  // 监听容器尺寸变化 - 简化版本，完全依赖CSS布局
+  // 监听容器尺寸变化和响应式参数同步
   useEffect(() => {
     // 🎯 简化：当窗口大小变化时，触发重新渲染即可
     const handleResize = () => {
@@ -114,6 +185,13 @@ const EmotionKnowledgeGraph: React.FC<EmotionKnowledgeGraphProps> = ({
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  // 同步响应式参数到控制状态
+  useEffect(() => {
+    setShowLabels(isTrulyMobile ? false : responsiveParams.showLabels);
+    setLinkDistance(responsiveParams.linkDistance);
+    setChargeStrength(responsiveParams.chargeStrength);
+  }, [isTrulyMobile, responsiveParams.showLabels, responsiveParams.linkDistance, responsiveParams.chargeStrength]);
 
   // 初始化和更新D3力导向图 - 完全依赖CSS布局
   useEffect(() => {
@@ -155,126 +233,48 @@ const EmotionKnowledgeGraph: React.FC<EmotionKnowledgeGraphProps> = ({
       target: nodes.find(n => n.id === (typeof edge.target === 'string' ? edge.target : edge.target.id))!
     })).filter(edge => edge.source && edge.target);
 
-    // 🎯 创建分层力模拟系统
+    // 🎯 创建稳定的力模拟系统 - 针对移动端优化
     const simulation = d3.forceSimulation<D3Node>(nodes)
       .force('link', d3.forceLink<D3Node, D3Edge>(edges)
         .id(d => d.id)
-        .distance((link: any) => {
-          // 根据节点类型设置不同的连接距离
-          const source = link.source as D3Node;
-          const target = link.target as D3Node;
-          
-          // 如果是情绪节点到原因节点的连接，使用较短距离（轨道半径）
-          if (source.type !== target.type) {
-            return linkDistance * 0.6; // 子节点更靠近主节点
-          }
-          // 如果是同类型节点之间的连接，使用较长距离
-          return linkDistance * 2;
-        })
-        .strength((link: any) => {
-          const source = link.source as D3Node;
-          const target = link.target as D3Node;
-          
-          // 情绪-原因连接更强，确保子节点围绕主节点
-          if (source.type !== target.type) {
-            return 0.8;
-          }
-          // 同类型连接较弱
-          return 0.1;
-        })
+        .distance(responsiveParams.linkDistance)
+        .strength(0.5) // 降低连接强度，减少振荡
       )
       .force('charge', d3.forceManyBody()
-        .strength((d: any) => {
-          // 情绪节点（主节点）之间有更强的斥力
-          if (d.type === 'emotion') {
-            return chargeStrength * 2; // 双倍斥力
-          }
-          // 原因节点（子节点）之间的斥力较小
-          return chargeStrength * 0.3;
-        })
+        .strength(responsiveParams.chargeStrength)
+        .distanceMin(isTrulyMobile ? 5 : 10) // 设置最小距离避免奇点
+        .distanceMax(isTrulyMobile ? 100 : 200) // 限制作用范围
       )
       .force('collision', d3.forceCollide()
         .radius((d: any) => {
-          // 情绪节点有更大的碰撞半径，确保它们之间保持距离
+          // 使用响应式碰撞半径
           if (d.type === 'emotion') {
-            return d.size * 0.6;  // 进一步调小碰撞半径
+            return responsiveParams.emotionCollisionRadius;
           }
-          return d.size * 0.5;  // 进一步调小碰撞半径
+          return responsiveParams.causeCollisionRadius;
         })
-        .strength(0.8)
+        .strength(0.9) // 增强碰撞检测
+        .iterations(2) // 多次迭代提高精度
       )
-      // 添加径向力，让原因节点围绕其连接的情绪节点
-      .force('radial', d3.forceRadial(
-        (d: any) => {
-          // 只对原因节点应用径向力
-          if (d.type === 'cause') {
-            // 找到该原因节点连接的情绪节点
-            const connectedEmotions = edges
-              .filter(e => 
-                (e.source.id === d.id && e.target.type === 'emotion') ||
-                (e.target.id === d.id && e.source.type === 'emotion')
-              )
-              .map(e => e.source.id === d.id ? e.target : e.source);
-            
-            if (connectedEmotions.length === 1) {
-              // 如果只连接一个情绪节点，围绕它形成轨道
-              return linkDistance * 0.7;
-            } else if (connectedEmotions.length > 1) {
-              // 如果连接多个情绪节点，位于中间位置
-              return linkDistance * 0.5;
-            }
-          }
-          return 0;
-        },
-        (d: any) => {
-          // 设置径向力的中心点X坐标
-          if (d.type === 'cause') {
-            const connectedEmotions = edges
-              .filter(e => 
-                (e.source.id === d.id && e.target.type === 'emotion') ||
-                (e.target.id === d.id && e.source.type === 'emotion')
-              )
-              .map(e => e.source.id === d.id ? e.target : e.source) as D3Node[];
-            
-            if (connectedEmotions.length > 0) {
-              // 计算所有连接的情绪节点的中心位置
-              return connectedEmotions.reduce((sum, node) => sum + (node.x || 0), 0) / connectedEmotions.length;
-            }
-          }
-          return 0;
-        },
-        (d: any) => {
-          // 设置径向力的中心点Y坐标
-          if (d.type === 'cause') {
-            const connectedEmotions = edges
-              .filter(e => 
-                (e.source.id === d.id && e.target.type === 'emotion') ||
-                (e.target.id === d.id && e.source.type === 'emotion')
-              )
-              .map(e => e.source.id === d.id ? e.target : e.source) as D3Node[];
-            
-            if (connectedEmotions.length > 0) {
-              return connectedEmotions.reduce((sum, node) => sum + (node.y || 0), 0) / connectedEmotions.length;
-            }
-          }
-          return 0;
-        }
-      )
-        .strength((d: any) => d.type === 'cause' ? 0.3 : 0)
-      )
-      .force('x', d3.forceX().strength(0.02))
-      .force('y', d3.forceY().strength(0.02));
+      // 添加弱居中力，保持图形在视图中心但允许松散分布
+      .force('x', d3.forceX().strength(isTrulyMobile ? 0.02 : 0.05))
+      .force('y', d3.forceY().strength(isTrulyMobile ? 0.02 : 0.05))
+      // 🎯 快速收敛设置
+      .alpha(1) // 初始能量
+      .alphaDecay(isTrulyMobile ? 0.05 : 0.02) // 移动端更快衰减
+      .alphaMin(0.01) // 更早停止
+      .velocityDecay(0.6); // 增加阻尼
 
     simulationRef.current = simulation;
 
-    // 渲染边（初始状态，不依赖交互状态）
+    // 渲染边（使用响应式宽度）
     const link = container.selectAll('.link')
       .data(edges)
       .enter()
       .append('line')
       .attr('class', 'link')
       .attr('stroke', d => d.color)
-      .attr('stroke-width', d => d.width)
+      .attr('stroke-width', d => isTrulyMobile ? Math.max(d.width * 0.5, 1) : d.width) // 移动端边更细
       .attr('stroke-opacity', 0.6)
       .style('cursor', 'pointer');
 
@@ -286,19 +286,31 @@ const EmotionKnowledgeGraph: React.FC<EmotionKnowledgeGraphProps> = ({
       .attr('class', 'node')
       .style('cursor', 'pointer');
 
-    // 节点圆形（初始状态，不依赖交互状态）
+    // 节点圆形（使用响应式参数）
+          console.log('🎨 [Debug] 渲染节点，参数:', {
+        emotionNodeRadius: responsiveParams.emotionNodeRadius,
+        causeNodeRadius: responsiveParams.causeNodeRadius,
+        isMobile,
+        isTrulyMobile,
+        nodesCount: nodes.length
+      });
+    
     node.append('circle')
-      .attr('r', d => d.type === 'emotion' ? d.size * 0.4 : d.size * 0.35)  // 进一步调小节点的实际大小
+      .attr('r', d => {
+        const radius = d.type === 'emotion' ? responsiveParams.emotionNodeRadius : responsiveParams.causeNodeRadius;
+        console.log(`🔵 [Debug] 节点 ${d.id} (${d.type}) 半径: ${radius}px`);
+        return radius;
+      })
       .attr('fill', d => d.color)
       .attr('stroke', '#fff')
-      .attr('stroke-width', 2)
+      .attr('stroke-width', isTrulyMobile ? 1 : 2)
       .attr('opacity', 1);
 
-    // 节点emoji（如果有）
+    // 节点emoji（使用响应式字体大小）
     node.append('text')
       .attr('text-anchor', 'middle')
       .attr('dy', '0.35em')
-      .attr('font-size', d => Math.min(d.size * 0.25, 12))  // 调小emoji字体大小
+      .attr('font-size', responsiveParams.emojiFontSize)
       .text(d => {
         if (d.type === 'emotion' && d.emotion) {
           return EMOTION_EMOJIS[d.emotion] || '😐';
@@ -307,15 +319,18 @@ const EmotionKnowledgeGraph: React.FC<EmotionKnowledgeGraphProps> = ({
       })
       .attr('pointer-events', 'none');
 
-    // 节点标签（初始状态，不依赖交互状态）
+    // 节点标签（使用响应式参数）
     if (showLabels) {
       node.append('text')
         .attr('text-anchor', 'middle')
-        .attr('dy', d => (d.type === 'emotion' ? d.size * 0.4 : d.size * 0.35) + 15)  // 调整标签位置
-        .attr('font-size', '12px')
+        .attr('dy', responsiveParams.labelOffset)
+        .attr('font-size', `${responsiveParams.labelFontSize}px`)
         .attr('font-weight', 'normal')
         .attr('fill', '#333')
-        .text(d => d.label.length > 10 ? d.label.substring(0, 10) + '...' : d.label)
+        .text(d => {
+          const maxLength = isTrulyMobile ? 3 : 10;
+          return d.label.length > maxLength ? d.label.substring(0, maxLength) + '...' : d.label;
+        })
         .attr('pointer-events', 'none');
     }
 
@@ -356,32 +371,44 @@ const EmotionKnowledgeGraph: React.FC<EmotionKnowledgeGraphProps> = ({
           setSelectedNode(selectedNode === d.id ? null : d.id);
       });
 
-    // 拖拽行为 - 不重启simulation，避免所有节点乱动
-    const drag = d3.drag<SVGGElement, D3Node>()
-      .on('start', (_, d) => {
-        // 不重启simulation，只固定当前节点
-        d.fx = d.x;
-        d.fy = d.y;
-      })
-      .on('drag', (event, d) => {
-        d.fx = event.x;
-        d.fy = event.y;
-      })
-      .on('end', (_, d) => {
-        // 释放固定，让节点自然回到simulation控制
-        d.fx = null;
-        d.fy = null;
-      });
+    // 拖拽行为 - 根据设备类型决定是否启用
+    if (responsiveParams.enableDrag) {
+      const drag = d3.drag<SVGGElement, D3Node>()
+        .on('start', (_, d) => {
+          // 不重启simulation，只固定当前节点
+          d.fx = d.x;
+          d.fy = d.y;
+        })
+        .on('drag', (event, d) => {
+          d.fx = event.x;
+          d.fy = event.y;
+        })
+        .on('end', (_, d) => {
+          // 释放固定，让节点自然回到simulation控制
+          d.fx = null;
+          d.fy = null;
+        });
 
-    node.call(drag);
+      node.call(drag);
+    }
 
     // 点击空白区域取消选择
     svg.on('click', () => {
       setSelectedNode(null);
     });
 
-    // 力模拟更新
+    // 🎯 力模拟更新 - 添加稳定性控制
+    let tickCount = 0;
+    const maxTicks = isTrulyMobile ? 300 : 500; // 移动端更快停止
+    
     simulation.on('tick', () => {
+      tickCount++;
+      
+      // 强制停止条件
+      if (tickCount > maxTicks || simulation.alpha() < 0.005) {
+        simulation.stop();
+      }
+      
       link
         .attr('x1', d => d.source.x!)
         .attr('y1', d => d.source.y!)
@@ -396,7 +423,7 @@ const EmotionKnowledgeGraph: React.FC<EmotionKnowledgeGraphProps> = ({
       // 清理tooltip状态
       setTooltip({ visible: false, x: 0, y: 0, content: null });
     };
-  }, [baseFilteredData, forceUpdate, showLabels, linkDistance, chargeStrength]);
+  }, [baseFilteredData, forceUpdate, showLabels, linkDistance, chargeStrength, responsiveParams]);
 
   // 独立的样式更新useEffect，处理选中和悬停状态
   useEffect(() => {
@@ -509,21 +536,21 @@ const EmotionKnowledgeGraph: React.FC<EmotionKnowledgeGraphProps> = ({
         overflow: 'hidden'
       }}
     >
-      {/* 控制面板 */}
+      {/* 控制面板 - 响应式布局 */}
       <div style={{ 
-        marginBottom: 16, 
-        padding: 12, 
+        marginBottom: isTrulyMobile ? 12 : 16, 
+        padding: isTrulyMobile ? 8 : 12, 
         background: '#fafafa', 
         borderRadius: 6,
         display: 'flex',
         flexWrap: 'wrap',
-        gap: 16,
+        gap: isTrulyMobile ? 8 : 16,
         alignItems: 'center',
         width: '100%'
       }}>
-        <div style={{ flex: 1, minWidth: 200 }}>
+        <div style={{ flex: 1, minWidth: isTrulyMobile ? 150 : 200 }}>
           <Search
-            placeholder="搜索情绪或原因..."
+            placeholder={isTrulyMobile ? "搜索..." : "搜索情绪或原因..."}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             allowClear
@@ -531,49 +558,55 @@ const EmotionKnowledgeGraph: React.FC<EmotionKnowledgeGraphProps> = ({
           />
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Text style={{ fontSize: '12px' }}>显示标签</Text>
-          <Switch
-            size="small"
-            checked={showLabels}
-            onChange={setShowLabels}
-          />
-        </div>
+        {!isTrulyMobile && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Text style={{ fontSize: '12px' }}>显示标签</Text>
+            <Switch
+              size="small"
+              checked={showLabels}
+              onChange={setShowLabels}
+            />
+          </div>
+        )}
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 150 }}>
-          <Text style={{ fontSize: '12px' }}>强度阈值</Text>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: isTrulyMobile ? 120 : 150 }}>
+          <Text style={{ fontSize: '12px' }}>强度</Text>
           <Slider
             min={0}
             max={1}
             step={0.05}
             value={strengthThreshold}
             onChange={setStrengthThreshold}
-            style={{ width: 80 }}
+            style={{ width: isTrulyMobile ? 60 : 80 }}
             tooltip={{ formatter: (value) => `${(value! * 100).toFixed(0)}%` }}
           />
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
-          <Text style={{ fontSize: '12px' }}>连接距离</Text>
-          <Slider
-            min={50}
-            max={300}
-            value={linkDistance}
-            onChange={setLinkDistance}
-            style={{ width: 80 }}
-          />
-        </div>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
-          <Text style={{ fontSize: '12px' }}>斥力强度</Text>
-          <Slider
-            min={-1000}
-            max={-100}
-            value={chargeStrength}
-            onChange={setChargeStrength}
-            style={{ width: 80 }}
-          />
-        </div>
+        {!isTrulyMobile && (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
+              <Text style={{ fontSize: '12px' }}>连接距离</Text>
+              <Slider
+                min={50}
+                max={300}
+                value={linkDistance}
+                onChange={setLinkDistance}
+                style={{ width: 80 }}
+              />
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
+              <Text style={{ fontSize: '12px' }}>斥力强度</Text>
+              <Slider
+                min={-1000}
+                max={-100}
+                value={chargeStrength}
+                onChange={setChargeStrength}
+                style={{ width: 80 }}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* 图形区域容器 */}
@@ -585,7 +618,7 @@ const EmotionKnowledgeGraph: React.FC<EmotionKnowledgeGraphProps> = ({
             className="emotion-graph-svg"
           />
           
-          {/* 操作提示 */}
+          {/* 操作提示 - 响应式 */}
           <div style={{
             position: 'absolute',
             top: 8,
@@ -594,12 +627,18 @@ const EmotionKnowledgeGraph: React.FC<EmotionKnowledgeGraphProps> = ({
             color: 'white',
             padding: '4px 8px',
             borderRadius: 4,
-            fontSize: '11px',
+            fontSize: isTrulyMobile ? '10px' : '11px',
             zIndex: 1,
             pointerEvents: 'none'
           }}>
-            <div>🖱️ 点击选择 • 拖拽移动</div>
-            <div>🔍 滚轮缩放 • 悬停查看详情</div>
+            {isTrulyMobile ? (
+              <div>👆 点击选择 • 双指缩放</div>
+            ) : (
+              <>
+                <div>🖱️ 点击选择 • 拖拽移动</div>
+                <div>🔍 滚轮缩放 • 悬停查看详情</div>
+              </>
+            )}
           </div>
         </div>
 

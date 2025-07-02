@@ -4,6 +4,7 @@ import { InfoCircleOutlined } from '@ant-design/icons';
 import * as d3 from 'd3';
 import type { EmotionKnowledgeGraph, EmotionGraphNode, EmotionGraphEdge } from '../../types/emotion';
 import { EMOTION_EMOJIS, EMOTION_CHINESE_MAP } from '../../stores/emotionAnalysisStore';
+import { useResponsive } from '../../utils/responsiveUtils';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -82,7 +83,7 @@ class OrbitSystemManager {
       satellites: orbitNodes,
       orbitRadius: baseRadius,
       orbitLayers: layers,
-      boundingRadius: baseRadius * layers * 1.3 // 🎯 增加边界半径，减少重叠
+      boundingRadius: baseRadius * layers * 1.8 // 🎯 进一步增加边界半径，确保松散布局
     };
     
     // 标记节点
@@ -100,17 +101,21 @@ class OrbitSystemManager {
     return system;
   }
   
-  // 🚀 新增：计算最优轨道半径
+  // 🚀 新增：计算最优轨道半径 - 响应式调整
   private calculateOptimalRadius(centerNode: D3Node, satelliteCount: number): number {
-    const minRadius = centerNode.size * 2.5; // 最小距离
-    const avgSatelliteSize = 20; // 假设卫星节点平均大小
+    const minRadius = centerNode.size * 3.5; // 增加最小距离
+    const avgSatelliteSize = centerNode.size; // 使用实际节点大小，已经过响应式调整
     
-    // 🎯 根据节点数量和大小计算合适的半径
-    const circumference = satelliteCount * (avgSatelliteSize * 2.5); // 所需周长
+    // 🎯 根据节点数量和大小计算合适的半径 - 更松散的布局
+    const circumference = satelliteCount * (avgSatelliteSize * 4.0); // 增加间距系数
     const calculatedRadius = circumference / (2 * Math.PI);
     
+    // 🚀 移动端使用更大的最小半径，实现更松散的布局
+    const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || /Mobi|Android/i.test(navigator.userAgent));
+    const minOrbitRadius = isMobile ? 80 : 120; // 显著增加最小半径
+    
     // 返回较大值，确保足够空间
-    return Math.max(minRadius, calculatedRadius, 80);
+    return Math.max(minRadius, calculatedRadius, minOrbitRadius);
   }
   
   // 🎯 优化轨道层级计算
@@ -133,8 +138,8 @@ class OrbitSystemManager {
       const layerNodeCount = nodesPerLayer[layer - 1];
       const layerNodes = satellites.slice(satelliteIndex, satelliteIndex + layerNodeCount);
       
-      // 🌟 计算层的半径 - 使用更优雅的递增
-      const layerRadius = baseRadius * (1 + (layer - 1) * 0.8);
+      // 🌟 计算层的半径 - 使用更松散的递增
+      const layerRadius = baseRadius * (1 + (layer - 1) * 1.2); // 增加层间递增系数
       
       // 🚀 使用黄金角分布实现更均匀的角度分布
       const angles = this.calculateGoldenAngleDistribution(layerNodeCount, layer);
@@ -247,6 +252,25 @@ const InteractiveEmotionGraph: React.FC<InteractiveEmotionGraphProps> = ({
   height = 650,
   className
 }) => {
+  // 🎯 响应式检测
+  const { deviceType, isMobile } = useResponsive();
+  const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+  const isTrulyMobile = screenWidth < 768 || isMobile || /Mobi|Android/i.test(navigator.userAgent);
+  
+  // 🚀 移动端节点大小调整函数 - 基于D3.js最佳实践
+  const getResponsiveNodeSize = (originalSize: number): number => {
+    if (isTrulyMobile) {
+      // 移动端：固定大小范围，避免过大或过小
+      const mobileSize = Math.min(Math.max(originalSize * 0.3, 8), 25); // 8-25px范围
+      console.log(`📱 [Mobile] 节点尺寸调整: ${originalSize} → ${mobileSize}`);
+      return mobileSize;
+    } else if (deviceType === 'tablet') {
+      // 平板端：适度缩小
+      return Math.min(Math.max(originalSize * 0.6, 12), 40); // 12-40px范围
+    }
+    // 桌面端：保持原始大小但设置合理上限
+    return Math.min(originalSize, 60); // 最大60px
+  };
   const svgRef = useRef<SVGSVGElement>(null);
   const simulationRef = useRef<d3.Simulation<D3Node, D3Edge> | null>(null);
   const orbitManagerRef = useRef<OrbitSystemManager>(new OrbitSystemManager());
@@ -313,7 +337,7 @@ const InteractiveEmotionGraph: React.FC<InteractiveEmotionGraphProps> = ({
   
   // 找到非重叠位置
   const findNonOverlappingPosition = (node: D3Node, existingSystems: OrbitSystem[], containerWidth: number, containerHeight: number): { x: number; y: number } => {
-    const margin = 100;
+    const margin = isTrulyMobile ? 50 : 80; // 减小边距，给节点更大的分布空间
     let attempts = 0;
     const maxAttempts = 50;
     
@@ -323,8 +347,8 @@ const InteractiveEmotionGraph: React.FC<InteractiveEmotionGraphProps> = ({
       
       let validPosition = true;
       for (const system of existingSystems) {
-        const distance = calculateDistance({ x, y }, system.centerNode);
-        if (distance < (system.boundingRadius + node.size * 3 + 50)) {
+                  const distance = calculateDistance({ x, y }, system.centerNode);
+        if (distance < (system.boundingRadius + node.size * 3 + 100)) { // 增加轨道系统间距
           validPosition = false;
           break;
         }
@@ -368,11 +392,18 @@ const InteractiveEmotionGraph: React.FC<InteractiveEmotionGraphProps> = ({
     
     // 🚀 基于节点数量的动态半径计算
     const nodeCount = filteredData.nodes.length;
-    const baseRadius = Math.min(actualWidth, actualHeight) / 2 - 50; // 基础半径
-    const densityFactor = Math.sqrt(nodeCount / 20); // 基准20个节点，平方根缩放避免过度放大
-    const maxRadius = baseRadius * Math.max(0.7, Math.min(densityFactor, 1.5)); // 半径范围：0.7-1.5倍
+    // 🚀 响应式基础半径计算 - 扩大分布范围
+    let baseRadius = Math.min(actualWidth, actualHeight) / 2 - 30; // 减小边距
+    if (isTrulyMobile) {
+      // 移动端使用更大的基础半径，提供更多空间
+      baseRadius = Math.min(actualWidth, actualHeight) / 2.2; // 更宽松的计算
+      baseRadius = Math.min(baseRadius, 250); // 移动端最大250px，比之前大很多
+    }
     
-    console.log(`🎯 动态半径计算: 节点数=${nodeCount}, 基础半径=${baseRadius.toFixed(1)}, 密度因子=${densityFactor.toFixed(2)}, 最终半径=${maxRadius.toFixed(1)}`);
+    const densityFactor = Math.sqrt(nodeCount / 15); // 基准15个节点，更宽松的密度计算
+    const maxRadius = baseRadius * Math.max(1.2, Math.min(densityFactor, isTrulyMobile ? 1.8 : 2.5)); // 显著增大分布范围
+    
+    console.log(`🎯 [${isTrulyMobile ? 'Mobile' : 'Desktop'}] 动态半径计算: 节点数=${nodeCount}, 基础半径=${baseRadius.toFixed(1)}, 密度因子=${densityFactor.toFixed(2)}, 最终半径=${maxRadius.toFixed(1)}`);
 
     // 🚀 优化缩放功能 - 添加缩放级别监听
     const zoom = d3.zoom<SVGSVGElement, unknown>()
@@ -384,8 +415,11 @@ const InteractiveEmotionGraph: React.FC<InteractiveEmotionGraphProps> = ({
       });
     svg.call(zoom);
 
-    // 🚀 轨道布局初始化
-    const nodes: D3Node[] = filteredData.nodes.map(node => ({ ...node }));
+    // 🚀 轨道布局初始化 - 应用响应式节点大小
+    const nodes: D3Node[] = filteredData.nodes.map(node => ({ 
+      ...node,
+      size: getResponsiveNodeSize(node.size) // 🎯 应用响应式大小调整
+    }));
     
     // 清空并重新初始化轨道系统
     orbitManager.clear();
@@ -434,18 +468,21 @@ const InteractiveEmotionGraph: React.FC<InteractiveEmotionGraphProps> = ({
       node.y = position.y;
     });
 
-    // 🎯 创建自定义圆形边界约束力
+    // 🎯 创建更宽松的边界约束力
     const boundaryForce = () => {
       nodes.forEach(node => {
         const dx = node.x! - centerX;
         const dy = node.y! - centerY;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        if (distance > maxRadius) {
-          // 将节点拉回圆形边界内
-          const factor = maxRadius / distance;
-          node.x = centerX + dx * factor;
-          node.y = centerY + dy * factor;
+        // 🌟 使用软边界：只有超出很多时才约束，并且约束力更柔和
+        const softBoundary = maxRadius * 1.1; // 增加10%的缓冲区
+        if (distance > softBoundary) {
+          // 使用柔和的拉回力，而不是硬性限制位置
+          const pullStrength = 0.02; // 柔和的拉回力
+          const pullFactor = (distance - softBoundary) / distance;
+          node.vx! -= dx * pullFactor * pullStrength;
+          node.vy! -= dy * pullFactor * pullStrength;
         }
       });
     };
@@ -465,7 +502,9 @@ const InteractiveEmotionGraph: React.FC<InteractiveEmotionGraphProps> = ({
           
           // 🌟 如果中心节点被拖拽，使用更强的约束力确保快速跟随
           const centerBeingDragged = system.centerNode.fx !== null;
-          const constraintStrength = centerBeingDragged ? 0.3 : 0.15;
+          // 🚀 移动端使用更轻柔的约束力
+          const baseStrength = isTrulyMobile ? 0.1 : 0.15;
+          const constraintStrength = centerBeingDragged ? (isTrulyMobile ? 0.2 : 0.3) : baseStrength;
           
           node.vx! += (idealX - node.x!) * constraintStrength;
           node.vy! += (idealY - node.y!) * constraintStrength;
@@ -483,7 +522,7 @@ const InteractiveEmotionGraph: React.FC<InteractiveEmotionGraphProps> = ({
           const systemB = systems[j];
           
           const distance = calculateDistance(systemA.centerNode, systemB.centerNode);
-          const minDistance = systemA.boundingRadius + systemB.boundingRadius + 80; // 🎯 增加安全距离
+          const minDistance = systemA.boundingRadius + systemB.boundingRadius + 150; // 🎯 进一步增加安全距离
           
           if (distance < minDistance) {
             // 🌟 使用非线性力函数，距离越近推力越强
@@ -526,14 +565,14 @@ const InteractiveEmotionGraph: React.FC<InteractiveEmotionGraphProps> = ({
         })
       ) 
       .force('collision', d3.forceCollide()
-        .radius((d: any) => d.size + 8) // 🎯 增加碰撞半径，防止重叠
+        .radius((d: any) => d.size + (isTrulyMobile ? 4 : 8)) // 🎯 移动端减小碰撞半径
         .strength(0.9) // 🌟 增强碰撞检测
       )
       .force('boundary', boundaryForce)
       .force('orbitConstraint', orbitConstraintForce) // 🌟 轨道约束力
       .force('orbitCollisionAvoidance', orbitCollisionAvoidanceForce) // 🌟 轨道冲突避免
-      .alphaDecay(0.01) // 🎯 更慢的衰减，让系统有更多时间稳定
-      .velocityDecay(0.85); // 🌟 适度增加阻尼
+      .alphaDecay(isTrulyMobile ? 0.03 : 0.01) // 🎯 移动端更快衰减，提高稳定性
+      .velocityDecay(isTrulyMobile ? 0.9 : 0.85); // 🌟 移动端增加阻尼
 
     console.log(`🌟 轨道系统初始化: ${orbitManager.getAllSystems().length} 个轨道系统`);
 
@@ -596,7 +635,10 @@ const InteractiveEmotionGraph: React.FC<InteractiveEmotionGraphProps> = ({
     node.append('text')
       .attr('text-anchor', 'middle')
       .attr('dy', '0.35em')
-      .attr('font-size', d => Math.min(d.size * 0.6, 16))
+      .attr('font-size', d => {
+        const emojiSize = Math.min(d.size * 0.6, isTrulyMobile ? 12 : 16);
+        return Math.max(emojiSize, 8); // 最小8px确保可见
+      })
       .text(d => {
         if (d.type === 'emotion' && d.emotion) {
           return EMOTION_EMOJIS[d.emotion] || '😐';
@@ -609,12 +651,15 @@ const InteractiveEmotionGraph: React.FC<InteractiveEmotionGraphProps> = ({
     node.append('text')
       .attr('class', 'node-label')
       .attr('text-anchor', 'middle')
-      .attr('dy', d => d.size + 18)
-      .attr('font-size', '12px')
+      .attr('dy', d => d.size + (isTrulyMobile ? 12 : 18))
+      .attr('font-size', isTrulyMobile ? '10px' : '12px')
       .attr('fill', '#333')
-      .text(d => d.label.length > 10 ? d.label.substring(0, 10) + '...' : d.label)
+      .text(d => {
+        const maxLength = isTrulyMobile ? 4 : 10;
+        return d.label.length > maxLength ? d.label.substring(0, maxLength) + '...' : d.label;
+      })
       .attr('pointer-events', 'none')
-      .style('opacity', shouldShowLabels ? 1 : 0) // 🚀 初始透明度基于缩放级别
+      .style('opacity', (shouldShowLabels && !isTrulyMobile) ? 1 : 0) // 🚀 移动端默认隐藏标签
       .style('transition', 'opacity 0.3s ease'); // 🎯 平滑过渡动画
 
     // 交互事件
