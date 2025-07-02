@@ -11,7 +11,9 @@ RUN npm config set registry https://registry.npmmirror.com/
 COPY package*.json ./
 
 # 安装所有依赖（包括devDependencies用于构建）
-RUN npm ci
+RUN rm -f package-lock.json && \
+    npm install && \
+    npm rebuild
 
 # 复制源代码
 COPY . .

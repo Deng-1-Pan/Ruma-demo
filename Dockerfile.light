@@ -12,15 +12,17 @@ RUN npm config set registry https://registry.npmmirror.com/ && \
 # 复制package.json和package-lock.json
 COPY package*.json ./
 
-# 清理npm缓存并安装依赖
+# 清理npm缓存并安装依赖（解决Rollup可选依赖问题）
 RUN npm cache clean --force && \
-    npm ci --no-optional --ignore-scripts
+    rm -f package-lock.json && \
+    npm install --no-optional --ignore-scripts && \
+    npm rebuild
 
 # 复制源代码
 COPY . .
 
-# 使用轻量级构建模式
-RUN npm run build:ci
+# 使用轻量级构建模式（避免CI兼容性问题）
+RUN npm run build:fast
 
 # 清理构建缓存
 RUN rm -rf node_modules && \
