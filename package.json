@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:fast": "vite build",
+    "build:fast": "vite build --mode production",
     "build:light": "cross-env NODE_OPTIONS='--max-old-space-size=1024' vite build --mode development",
-    "build:optimized": "cross-env NODE_OPTIONS='--max-old-space-size=1536' tsc && vite build",
-    "build:2gb": "cross-env NODE_OPTIONS='--max-old-space-size=1536' vite build",
+    "build:optimized": "cross-env NODE_OPTIONS='--max-old-space-size=2048' tsc && vite build",
+    "build:2gb": "cross-env NODE_OPTIONS='--max-old-space-size=2048' vite build --mode production",
+    "build:docker": "cross-env NODE_OPTIONS='--max-old-space-size=1536 --max_old_space_size=1536 --optimize-for-size' vite build --mode production",
+    "build:ci": "cross-env NODE_OPTIONS='--max-old-space-size=1024' vite build --mode production --minify esbuild",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",
@@ -19,8 +21,11 @@
     "deploy:fast": "npm run build:fast && npm run serve",
     "deploy:2gb": "npm run build:2gb && npm run serve",
     "docker:build": "docker build -t ruma-demo .",
+    "docker:build:light": "docker build -f Dockerfile.light -t ruma-demo-light .",
     "docker:run": "docker run -d -p 80:80 --name ruma-demo-app ruma-demo",
-    "docker:stop": "docker stop ruma-demo-app && docker rm ruma-demo-app"
+    "docker:run:light": "docker run -d -p 80:80 --name ruma-demo-app ruma-demo-light",
+    "docker:stop": "docker stop ruma-demo-app && docker rm ruma-demo-app",
+    "docker:deploy:light": "bash quick-deploy-light.sh"
   },
   "dependencies": {
     "@types/d3": "^7.4.3",

@@ -1,23 +1,30 @@
-# 使用官方Node.js镜像作为构建环境
+# 轻量级构建 - 适用于资源受限的云端环境
 FROM node:18-alpine as build
 
 # 设置工作目录
 WORKDIR /app
 
-# 设置npm配置以提高安装速度
-RUN npm config set registry https://registry.npmmirror.com/
+# 设置npm配置以提高安装速度并减少内存使用
+RUN npm config set registry https://registry.npmmirror.com/ && \
+    npm config set fund false && \
+    npm config set audit false
 
 # 复制package.json和package-lock.json
 COPY package*.json ./
 
-# 安装所有依赖（包括devDependencies用于构建）
-RUN npm ci
+# 清理npm缓存并安装依赖
+RUN npm cache clean --force && \
+    npm ci --no-optional --ignore-scripts
 
 # 复制源代码
 COPY . .
 
-# 设置Node.js内存限制并构建应用（使用Docker优化构建）
-RUN npm run build:docker
+# 使用轻量级构建模式
+RUN npm run build:ci
+
+# 清理构建缓存
+RUN rm -rf node_modules && \
+    npm cache clean --force
 
 # 使用nginx作为生产环境服务器
 FROM nginx:alpine
