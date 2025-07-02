@@ -386,6 +386,30 @@ class DemoApiClient {
   async get<T>(endpoint: string): Promise<ApiResponse<T>> {
     await this.delay();
     
+    // 特殊处理emotion-summaries端点
+    if (endpoint.includes('/history/emotion-summaries')) {
+      try {
+        // 动态导入7月份的模拟数据
+        const { generateMonthlyData } = await import('../demo-data/monthlyEmotionData');
+        const emotionSummaryData = generateMonthlyData();
+        
+        console.log(`📊 DemoApiClient: 返回 ${emotionSummaryData.length} 条情绪摘要数据`);
+        
+        return { 
+          success: true, 
+          data: emotionSummaryData as T,
+          message: 'Demo emotion summaries loaded successfully'
+        };
+      } catch (error) {
+        console.error('Failed to load demo emotion summaries:', error);
+        return { 
+          success: false, 
+          data: [] as T,
+          error: 'Failed to load demo data'
+        };
+      }
+    }
+    
     // 根据endpoint返回对应的演示数据
     if (endpoint.includes('/emotions/analysis')) {
       return { success: true, data: demoEmotionAnalysis as T };

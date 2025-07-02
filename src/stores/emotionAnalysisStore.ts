@@ -1004,8 +1004,16 @@ export const useEmotionAnalysisStore = create<EmotionAnalysisStore>()(
         },
 
         refreshData: async () => {
-          // 清除缓存并重新加载
-          set({ cacheKey: null });
+          // 清除所有缓存并重新加载
+          emotionAnalysisCache.clear();
+          summaryDataCache.clear();
+          set({ 
+            cacheKey: null, 
+            analysisResult: null, 
+            summaryData: [], 
+            lastUpdated: null 
+          });
+          console.log('🎯 RefreshData: 已清除所有缓存，开始重新加载');
           await get().loadSummaryData();
         },
 
@@ -1055,7 +1063,7 @@ async function loadSummaryDataFromOSS(
 ): Promise<EmotionSummaryData[]> {
   try {
     // 在开发环境中使用假数据
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV !== 'production') {
       // 动态导入假数据
       const { generateMonthlyData } = await import('../demo-data/monthlyEmotionData');
       const allFakeData = generateMonthlyData();
@@ -1076,10 +1084,14 @@ async function loadSummaryDataFromOSS(
     // 生产环境使用真实OSS数据
     const dateRange = calculateDateRange(timeRange, startDate, endDate);
     
+    // 修改API调用参数，确保使用正确的日期范围
+    const apiStartDate = new Date(dateRange.start);
+    apiStartDate.setMonth(apiStartDate.getMonth() - 1); // 额外往前取一个月的数据
+    
     // 使用新的getEmotionSummaries方法
     const response = await historyService.getEmotionSummaries({
       timeRange,
-      startDate: dateRange.start.toISOString().split('T')[0],
+      startDate: apiStartDate.toISOString().split('T')[0],
       endDate: dateRange.end.toISOString().split('T')[0],
       limit: ALGORITHM_CONFIG.performance.batchSize
     });
@@ -1115,29 +1127,51 @@ function calculateDateRange(
   endDate?: Date
 ): { start: Date; end: Date } {
   if (startDate && endDate) {
+    console.log('🎯 calculateDateRange: 使用自定义日期范围', {
+      start: startDate.toISOString(),
+      end: endDate.toISOString()
+    });
     return { start: startDate, end: endDate };
   }
 
   const now = new Date();
-  const end = new Date(now);
   let start: Date;
+  let end: Date;
 
   switch (timeRange) {
     case 'week':
+      // 近一周：从7天前开始到今天
       start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      end = new Date(now);
       break;
     case 'month':
+      // 近一月：从30天前开始到今天
       start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      end = new Date(now);
       break;
     case 'quarter':
+      // 近三月：从90天前开始到今天
       start = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      end = new Date(now);
       break;
     case 'year':
+      // 近一年：从365天前开始到今天
       start = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+      end = new Date(now);
       break;
     default:
+      // 默认近一月
       start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      end = new Date(now);
   }
+
+  console.log('🎯 calculateDateRange: 计算结果', {
+    timeRange,
+    now: now.toISOString(),
+    start: start.toISOString(),
+    end: end.toISOString(),
+    daysDiff: (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+  });
 
   return { start, end };
 }
@@ -1176,7 +1210,22 @@ async function analyzeEmotionData(
       console.warn('跳过无效日期的数据:', summary);
       return false;
     }
-    return summaryDate >= dateRange.start && summaryDate <= dateRange.end;
+    const isInRange = summaryDate >= dateRange.start && summaryDate <= dateRange.end;
+    
+    // 🔍 添加详细调试信息
+    console.log('🔍 数据过滤检查:', {
+      timestamp: summary.timestamp,
+      summaryDate: summaryDate.toISOString(),
+      dateRangeStart: dateRange.start.toISOString(),
+      dateRangeEnd: dateRange.end.toISOString(),
+      isInRange,
+      comparison: {
+        afterStart: summaryDate >= dateRange.start,
+        beforeEnd: summaryDate <= dateRange.end
+      }
+    });
+    
+    return isInRange;
   });
   
   console.log('🎯 analyzeEmotionData: 数据过滤结果', {

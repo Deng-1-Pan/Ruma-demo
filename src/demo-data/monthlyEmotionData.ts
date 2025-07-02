@@ -348,13 +348,13 @@ const summaryTemplates = [
   "在{cause}的过程中，深深感受到{emotion}"
 ];
 
-// 生成完整一个月数据的辅助函数
+// 生成完整历史数据的辅助函数 (3月 + 4月 + 5月 + 6月 + 7月 + 8月)
 export function generateMonthlyData(): EmotionSummaryData[] {
   const allData: ExtendedEmotionSummaryData[] = [...monthlyEmotionData];
   let threadId = 10; // 从已有数据的thread_009继续
   
-  // 生成剩余的天数数据 (从第6天到第30天)
-  for (let day = 6; day <= 30; day++) {
+  // 生成3月的数据 (从第1天到第31天)
+  for (let day = 1; day <= 31; day++) {
     const conversationsPerDay = Math.floor(Math.random() * 3) + 1; // 1-3次对话
     
     for (let conv = 0; conv < conversationsPerDay; conv++) {
@@ -362,12 +362,11 @@ export function generateMonthlyData(): EmotionSummaryData[] {
       const minute = Math.floor(Math.random() * 60);
       const second = Math.floor(Math.random() * 60);
       
-             const emotionCount = Math.floor(Math.random() * 3) + 1; // 1-3种情绪
-       const selectedEmotions: ExtendedEmotionInfo[] = [];
-       const usedEmotions = new Set();
+      const emotionCount = Math.floor(Math.random() * 3) + 1; // 1-3种情绪
+      const selectedEmotions: ExtendedEmotionInfo[] = [];
+      const usedEmotions = new Set();
       
       for (let i = 0; i < emotionCount; i++) {
-        // 确保不重复选择同样的情绪
         let emotionIndex;
         let selectedEmotion;
         do {
@@ -394,15 +393,191 @@ export function generateMonthlyData(): EmotionSummaryData[] {
         });
       }
       
-             // 生成摘要
-       const templateIndex = Math.floor(Math.random() * summaryTemplates.length);
-       const template = summaryTemplates[templateIndex];
-       const primaryEmotion = selectedEmotions[0];
-       const primaryCause = primaryEmotion.causes?.[0]?.cause || "日常生活";
-       
-       const summary = template
-         .replace('{cause}', primaryCause)
-         .replace('{emotion}', primaryEmotion.emotion_cn || primaryEmotion.emotion);
+      const templateIndex = Math.floor(Math.random() * summaryTemplates.length);
+      const template = summaryTemplates[templateIndex];
+      const primaryEmotion = selectedEmotions[0];
+      const primaryCause = primaryEmotion.causes?.[0]?.cause || "日常生活";
+      
+      const summary = template
+        .replace('{cause}', primaryCause)
+        .replace('{emotion}', primaryEmotion.emotion_cn || primaryEmotion.emotion);
+      
+      threadId++;
+      allData.push({
+        timestamp: `2025-03-${day.toString().padStart(2, '0')}T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}`,
+        thread_id: `thread_${threadId.toString().padStart(3, '0')}`,
+        summary: summary,
+        detected_emotions: selectedEmotions
+      });
+    }
+  }
+  
+  // 生成4月的数据 (从第1天到第30天)
+  for (let day = 1; day <= 30; day++) {
+    const conversationsPerDay = Math.floor(Math.random() * 3) + 1; // 1-3次对话
+    
+    for (let conv = 0; conv < conversationsPerDay; conv++) {
+      const hour = Math.floor(Math.random() * 16) + 7; // 7-22点之间
+      const minute = Math.floor(Math.random() * 60);
+      const second = Math.floor(Math.random() * 60);
+      
+      const emotionCount = Math.floor(Math.random() * 3) + 1; // 1-3种情绪
+      const selectedEmotions: ExtendedEmotionInfo[] = [];
+      const usedEmotions = new Set();
+      
+      for (let i = 0; i < emotionCount; i++) {
+        let emotionIndex;
+        let selectedEmotion;
+        do {
+          emotionIndex = Math.floor(Math.random() * emotionDatabase.length);
+          selectedEmotion = emotionDatabase[emotionIndex];
+        } while (usedEmotions.has(selectedEmotion.emotion) && usedEmotions.size < emotionDatabase.length);
+        
+        usedEmotions.add(selectedEmotion.emotion);
+        
+        const intensity = Math.floor(Math.random() * 70) + 30; // 30-100强度
+        const causeIndex = Math.floor(Math.random() * emotionCauses.length);
+        const cause = emotionCauses[causeIndex];
+        
+        selectedEmotions.push({
+          emotion: selectedEmotion.emotion,
+          emotion_cn: selectedEmotion.emotion_cn,
+          intensity,
+          causes: [
+            {
+              cause: cause,
+              description: `${cause}对${selectedEmotion.emotion_cn}情绪产生的影响。`
+            }
+          ]
+        });
+      }
+      
+      const templateIndex = Math.floor(Math.random() * summaryTemplates.length);
+      const template = summaryTemplates[templateIndex];
+      const primaryEmotion = selectedEmotions[0];
+      const primaryCause = primaryEmotion.causes?.[0]?.cause || "日常生活";
+      
+      const summary = template
+        .replace('{cause}', primaryCause)
+        .replace('{emotion}', primaryEmotion.emotion_cn || primaryEmotion.emotion);
+      
+      threadId++;
+      allData.push({
+        timestamp: `2025-04-${day.toString().padStart(2, '0')}T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}`,
+        thread_id: `thread_${threadId.toString().padStart(3, '0')}`,
+        summary: summary,
+        detected_emotions: selectedEmotions
+      });
+    }
+  }
+  
+  // 生成5月的数据 (从第1天到第31天)
+  for (let day = 1; day <= 31; day++) {
+    const conversationsPerDay = Math.floor(Math.random() * 3) + 1; // 1-3次对话
+    
+    for (let conv = 0; conv < conversationsPerDay; conv++) {
+      const hour = Math.floor(Math.random() * 16) + 7; // 7-22点之间
+      const minute = Math.floor(Math.random() * 60);
+      const second = Math.floor(Math.random() * 60);
+      
+      const emotionCount = Math.floor(Math.random() * 3) + 1; // 1-3种情绪
+      const selectedEmotions: ExtendedEmotionInfo[] = [];
+      const usedEmotions = new Set();
+      
+      for (let i = 0; i < emotionCount; i++) {
+        let emotionIndex;
+        let selectedEmotion;
+        do {
+          emotionIndex = Math.floor(Math.random() * emotionDatabase.length);
+          selectedEmotion = emotionDatabase[emotionIndex];
+        } while (usedEmotions.has(selectedEmotion.emotion) && usedEmotions.size < emotionDatabase.length);
+        
+        usedEmotions.add(selectedEmotion.emotion);
+        
+        const intensity = Math.floor(Math.random() * 70) + 30; // 30-100强度
+        const causeIndex = Math.floor(Math.random() * emotionCauses.length);
+        const cause = emotionCauses[causeIndex];
+        
+        selectedEmotions.push({
+          emotion: selectedEmotion.emotion,
+          emotion_cn: selectedEmotion.emotion_cn,
+          intensity,
+          causes: [
+            {
+              cause: cause,
+              description: `${cause}对${selectedEmotion.emotion_cn}情绪产生的影响。`
+            }
+          ]
+        });
+      }
+      
+      const templateIndex = Math.floor(Math.random() * summaryTemplates.length);
+      const template = summaryTemplates[templateIndex];
+      const primaryEmotion = selectedEmotions[0];
+      const primaryCause = primaryEmotion.causes?.[0]?.cause || "日常生活";
+      
+      const summary = template
+        .replace('{cause}', primaryCause)
+        .replace('{emotion}', primaryEmotion.emotion_cn || primaryEmotion.emotion);
+      
+      threadId++;
+      allData.push({
+        timestamp: `2025-05-${day.toString().padStart(2, '0')}T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}`,
+        thread_id: `thread_${threadId.toString().padStart(3, '0')}`,
+        summary: summary,
+        detected_emotions: selectedEmotions
+      });
+    }
+  }
+  
+  // 生成6月剩余的天数数据 (从第6天到第30天)
+  for (let day = 6; day <= 30; day++) {
+    const conversationsPerDay = Math.floor(Math.random() * 3) + 1; // 1-3次对话
+    
+    for (let conv = 0; conv < conversationsPerDay; conv++) {
+      const hour = Math.floor(Math.random() * 16) + 7; // 7-22点之间
+      const minute = Math.floor(Math.random() * 60);
+      const second = Math.floor(Math.random() * 60);
+      
+      const emotionCount = Math.floor(Math.random() * 3) + 1; // 1-3种情绪
+      const selectedEmotions: ExtendedEmotionInfo[] = [];
+      const usedEmotions = new Set();
+      
+      for (let i = 0; i < emotionCount; i++) {
+        let emotionIndex;
+        let selectedEmotion;
+        do {
+          emotionIndex = Math.floor(Math.random() * emotionDatabase.length);
+          selectedEmotion = emotionDatabase[emotionIndex];
+        } while (usedEmotions.has(selectedEmotion.emotion) && usedEmotions.size < emotionDatabase.length);
+        
+        usedEmotions.add(selectedEmotion.emotion);
+        
+        const intensity = Math.floor(Math.random() * 70) + 30; // 30-100强度
+        const causeIndex = Math.floor(Math.random() * emotionCauses.length);
+        const cause = emotionCauses[causeIndex];
+        
+        selectedEmotions.push({
+          emotion: selectedEmotion.emotion,
+          emotion_cn: selectedEmotion.emotion_cn,
+          intensity,
+          causes: [
+            {
+              cause: cause,
+              description: `${cause}对${selectedEmotion.emotion_cn}情绪产生的影响。`
+            }
+          ]
+        });
+      }
+      
+      const templateIndex = Math.floor(Math.random() * summaryTemplates.length);
+      const template = summaryTemplates[templateIndex];
+      const primaryEmotion = selectedEmotions[0];
+      const primaryCause = primaryEmotion.causes?.[0]?.cause || "日常生活";
+      
+      const summary = template
+        .replace('{cause}', primaryCause)
+        .replace('{emotion}', primaryEmotion.emotion_cn || primaryEmotion.emotion);
       
       threadId++;
       allData.push({
@@ -414,6 +589,124 @@ export function generateMonthlyData(): EmotionSummaryData[] {
     }
   }
   
-     // 按时间排序并转换为EmotionSummaryData类型
+  // 生成7月的数据 (从第1天到第31天)
+  for (let day = 1; day <= 31; day++) {
+    const conversationsPerDay = Math.floor(Math.random() * 3) + 1; // 1-3次对话
+    
+    for (let conv = 0; conv < conversationsPerDay; conv++) {
+      const hour = Math.floor(Math.random() * 16) + 7; // 7-22点之间
+      const minute = Math.floor(Math.random() * 60);
+      const second = Math.floor(Math.random() * 60);
+      
+      const emotionCount = Math.floor(Math.random() * 3) + 1; // 1-3种情绪
+      const selectedEmotions: ExtendedEmotionInfo[] = [];
+      const usedEmotions = new Set();
+      
+      for (let i = 0; i < emotionCount; i++) {
+        let emotionIndex;
+        let selectedEmotion;
+        do {
+          emotionIndex = Math.floor(Math.random() * emotionDatabase.length);
+          selectedEmotion = emotionDatabase[emotionIndex];
+        } while (usedEmotions.has(selectedEmotion.emotion) && usedEmotions.size < emotionDatabase.length);
+        
+        usedEmotions.add(selectedEmotion.emotion);
+        
+        const intensity = Math.floor(Math.random() * 70) + 30; // 30-100强度
+        const causeIndex = Math.floor(Math.random() * emotionCauses.length);
+        const cause = emotionCauses[causeIndex];
+        
+        selectedEmotions.push({
+          emotion: selectedEmotion.emotion,
+          emotion_cn: selectedEmotion.emotion_cn,
+          intensity,
+          causes: [
+            {
+              cause: cause,
+              description: `${cause}对${selectedEmotion.emotion_cn}情绪产生的影响。`
+            }
+          ]
+        });
+      }
+      
+      const templateIndex = Math.floor(Math.random() * summaryTemplates.length);
+      const template = summaryTemplates[templateIndex];
+      const primaryEmotion = selectedEmotions[0];
+      const primaryCause = primaryEmotion.causes?.[0]?.cause || "日常生活";
+      
+      const summary = template
+        .replace('{cause}', primaryCause)
+        .replace('{emotion}', primaryEmotion.emotion_cn || primaryEmotion.emotion);
+      
+      threadId++;
+      allData.push({
+        timestamp: `2025-07-${day.toString().padStart(2, '0')}T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}`,
+        thread_id: `thread_${threadId.toString().padStart(3, '0')}`,
+        summary: summary,
+        detected_emotions: selectedEmotions
+      });
+    }
+  }
+  
+  // 生成8月的数据 (从第1天到第31天)
+  for (let day = 1; day <= 31; day++) {
+    const conversationsPerDay = Math.floor(Math.random() * 3) + 1; // 1-3次对话
+    
+    for (let conv = 0; conv < conversationsPerDay; conv++) {
+      const hour = Math.floor(Math.random() * 16) + 7; // 7-22点之间
+      const minute = Math.floor(Math.random() * 60);
+      const second = Math.floor(Math.random() * 60);
+      
+      const emotionCount = Math.floor(Math.random() * 3) + 1; // 1-3种情绪
+      const selectedEmotions: ExtendedEmotionInfo[] = [];
+      const usedEmotions = new Set();
+      
+      for (let i = 0; i < emotionCount; i++) {
+        let emotionIndex;
+        let selectedEmotion;
+        do {
+          emotionIndex = Math.floor(Math.random() * emotionDatabase.length);
+          selectedEmotion = emotionDatabase[emotionIndex];
+        } while (usedEmotions.has(selectedEmotion.emotion) && usedEmotions.size < emotionDatabase.length);
+        
+        usedEmotions.add(selectedEmotion.emotion);
+        
+        const intensity = Math.floor(Math.random() * 70) + 30; // 30-100强度
+        const causeIndex = Math.floor(Math.random() * emotionCauses.length);
+        const cause = emotionCauses[causeIndex];
+        
+        selectedEmotions.push({
+          emotion: selectedEmotion.emotion,
+          emotion_cn: selectedEmotion.emotion_cn,
+          intensity,
+          causes: [
+            {
+              cause: cause,
+              description: `${cause}对${selectedEmotion.emotion_cn}情绪产生的影响。`
+            }
+          ]
+        });
+      }
+      
+      const templateIndex = Math.floor(Math.random() * summaryTemplates.length);
+      const template = summaryTemplates[templateIndex];
+      const primaryEmotion = selectedEmotions[0];
+      const primaryCause = primaryEmotion.causes?.[0]?.cause || "日常生活";
+      
+      const summary = template
+        .replace('{cause}', primaryCause)
+        .replace('{emotion}', primaryEmotion.emotion_cn || primaryEmotion.emotion);
+      
+      threadId++;
+      allData.push({
+        timestamp: `2025-08-${day.toString().padStart(2, '0')}T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}`,
+        thread_id: `thread_${threadId.toString().padStart(3, '0')}`,
+        summary: summary,
+        detected_emotions: selectedEmotions
+      });
+    }
+  }
+  
+  // 按时间排序并转换为EmotionSummaryData类型
   return allData.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()) as EmotionSummaryData[];
 } 

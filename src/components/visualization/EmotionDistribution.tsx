@@ -95,30 +95,40 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
         console.log('🎯 EmotionDistribution: OSS数据总数', emotionStore.summaryData.length);
         console.log('🎯 EmotionDistribution: OSS数据结构样本', emotionStore.summaryData.slice(0, 1));
         
-        // 🎯 重新加入时间过滤逻辑，参考EmotionChart实现
+        // 🎯 使用与emotionAnalysisStore中相同的日期范围计算逻辑
         const now = new Date();
         let startDate: Date;
+        let endDate: Date;
         
-        switch (timeRange) {
-          case 'week':
-            startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            break;
-          case 'month':
-            startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-            break;
-          case 'quarter':
-            startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-            break;
-          case 'year':
-            startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
-            break;
-          default:
-            startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        }
+                 switch (timeRange) {
+           case 'week':
+             startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+             endDate = new Date(now);
+             break;
+           case 'month':
+             // 近一月：从30天前开始到今天
+             startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+             endDate = new Date(now);
+             break;
+           case 'quarter':
+             // 近三月：从90天前开始到今天
+             startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+             endDate = new Date(now);
+             break;
+           case 'year':
+             // 近一年：从365天前开始到今天
+             startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+             endDate = new Date(now);
+             break;
+           default:
+             // 默认近一月
+             startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+             endDate = new Date(now);
+         }
 
         console.log(`🎯 EmotionDistribution: 时间过滤范围 ${timeRange}`, {
           startDate: startDate.toISOString(),
-          endDate: now.toISOString()
+          endDate: endDate.toISOString()
         });
         
         let totalEmotionRecords = 0;
@@ -154,7 +164,7 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
           });
           
           // 🎯 检查是否在时间范围内
-          if (summaryDate >= startDate && summaryDate <= now) {
+          if (summaryDate >= startDate && summaryDate <= endDate) {
             if (summary.detected_emotions && Array.isArray(summary.detected_emotions)) {
               summary.detected_emotions.forEach(emotion => {
                 console.log(`🎯 EmotionDistribution: 添加emotion ${emotion.emotion}`);
@@ -169,26 +179,36 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
         console.log('🎯 EmotionDistribution: 最终情绪分布', finalData);
       }
     } else if (rawData && rawData.length > 0) {
-      // 使用传入的rawData进行时间过滤
+      // 使用传入的rawData进行时间过滤 - 使用统一的日期计算逻辑
       const now = new Date();
       let startDate: Date;
+      let endDate: Date;
       
-      switch (timeRange) {
-        case 'week':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          break;
-        case 'month':
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          break;
-        case 'quarter':
-          startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-          break;
-        case 'year':
-          startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
-          break;
-        default:
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      }
+              switch (timeRange) {
+          case 'week':
+            startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            endDate = new Date(now);
+            break;
+          case 'month':
+            // 近一月：从30天前开始到今天
+            startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            endDate = new Date(now);
+            break;
+          case 'quarter':
+            // 近三月：从90天前开始到今天
+            startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+            endDate = new Date(now);
+            break;
+          case 'year':
+            // 近一年：从365天前开始到今天
+            startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+            endDate = new Date(now);
+            break;
+          default:
+            // 默认近一月
+            startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            endDate = new Date(now);
+        }
 
       // 过滤数据并重新计算分布
       const filteredData = rawData.filter(item => {
@@ -198,7 +218,7 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
           console.warn(`🎯 EmotionDistribution: rawData中的timestamp ${item.timestamp} 解析为无效日期，跳过`);
           return false;
         }
-        return itemDate >= startDate && itemDate <= now;
+        return itemDate >= startDate && itemDate <= endDate;
       });
 
       console.log(`🎯 EmotionDistribution: 时间范围=${timeRange}, 原始数据=${rawData.length}条, 过滤后=${filteredData.length}条`);

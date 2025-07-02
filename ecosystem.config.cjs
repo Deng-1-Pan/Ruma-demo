@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
     name: 'ruma-demo',
-    script: 'npx serve dist -s -l 3000 -H 0.0.0.0',
+    script: 'node server.js',
     instances: 1,
     autorestart: true,
     watch: false,
