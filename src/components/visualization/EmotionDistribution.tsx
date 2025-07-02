@@ -23,6 +23,8 @@ interface EmotionDistributionProps {
   showControls?: boolean;
   // 新增：是否使用OSS原始数据进行时间过滤
   useOSSData?: boolean;
+  // 新增：是否显示图例
+  showLegend?: boolean;
 }
 
 const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
@@ -34,7 +36,8 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
   timeRange = 'week',
   onTimeRangeChange,
   showControls = true,
-  useOSSData = false
+  useOSSData = false,
+  showLegend = true
 }) => {
   // 🎯 修复：使用统一的情绪配置系统
   const getEmotionConfig = (emotion: string) => {
@@ -253,7 +256,7 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
           color: '#333'
         }
       },
-      legend: {
+      legend: showLegend ? {
         orient: 'vertical',
         left: 'left',
         top: 'middle',
@@ -266,12 +269,14 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
         },
         itemWidth: 14,
         itemHeight: 14
+      } : {
+        show: false
       },
-      series: [
+              series: [
         {
           type: 'pie',
           radius: ['40%', '70%'],
-          center: ['50%', '50%'],  // 居中显示
+          center: showLegend ? ['60%', '50%'] : ['50%', '50%'],  // 有图例时右偏，无图例时居中
           avoidLabelOverlap: false,
           label: {
             show: false,

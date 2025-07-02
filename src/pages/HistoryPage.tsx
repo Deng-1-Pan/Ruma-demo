@@ -7,16 +7,19 @@ import { ChatHistory, HistoryFilter } from '../types';
 import { HistoryMetadata, ChatHistoryData } from '../types/history';
 import HistoryList from '../components/history/HistoryList';
 import HistoryDetail from '../components/history/HistoryDetail';
+// import VirtualList from '../components/common/VirtualList';
+import PullToRefresh from '../components/common/PullToRefresh';
 import { useChatSessions, useChatActions } from '../stores';
 import { useUserStore } from '../stores/userStore';
 import historyService from '../services/historyService';
+import { useResponsive } from '../utils/responsiveUtils';
 
 const { Title, Text } = Typography;
 // 以下变量因对应功能已暂时隐藏而被注释，恢复功能时需取消注释：
 // const { RangePicker } = DatePicker;
 // const { Option } = Select;
 // const { Search } = Input;
-const { Sider, Content } = Layout;
+const { Sider, Content, Header } = Layout;
 
 interface HistoryPageProps {
   onBack?: () => void;
@@ -26,6 +29,9 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
   onBack = () => window.location.href = '/chat' 
 }) => {
   // 🔧 移除全局body样式控制，改用精确的容器级控制
+  // 响应式检测
+  const { isMobile } = useResponsive();
+  
   // Store状态
   const sessions = useChatSessions();
   const { deleteSession } = useChatActions();
@@ -36,6 +42,9 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
   const [loading, setLoading] = useState(false);
   const [cloudHistoryLoading, setCloudHistoryLoading] = useState(false);
   const [cloudHistoryError, setCloudHistoryError] = useState<string | null>(null);
+  
+
+  
   // 已临时隐藏，因搜索筛选功能被注释：
   const [filter/*, setFilter*/] = useState<HistoryFilter>({
     sortBy: 'date',
@@ -362,6 +371,91 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
   const handleBackToList = () => {
     setSelectedHistory(null);
   };
+  
+  // 移动端顶部导航栏
+  const renderMobileHeader = () => {
+    if (showMobileDetail) {
+      // 详情页的导航栏
+      return (
+        <Header style={{
+          background: '#fff',
+          borderBottom: '1px solid #e8e8e8',
+          padding: '0 16px',
+          height: '56px',
+          lineHeight: '56px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          position: 'sticky',
+          top: 0,
+          zIndex: 100
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Button 
+              type="text" 
+              icon={<ArrowLeftOutlined />}
+              onClick={handleBackToList}
+              style={{ padding: '8px' }}
+            />
+            <div>
+              <Title level={5} style={{ margin: 0, fontSize: '16px' }}>历史详情</Title>
+              <div style={{ fontSize: '10px', color: '#8c8c8c', lineHeight: 1 }}>
+                {selectedHistory?.title}
+              </div>
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {loading && <Spin size="small" />}
+          </div>
+        </Header>
+      );
+    } else {
+      // 历史列表页的导航栏
+      return (
+        <Header style={{
+          background: '#fff',
+          borderBottom: '1px solid #e8e8e8',
+          padding: '0 16px',
+          height: '56px',
+          lineHeight: '56px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          position: 'sticky',
+          top: 0,
+          zIndex: 100
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Button 
+              type="text" 
+              icon={<ArrowLeftOutlined />}
+              onClick={onBack}
+              style={{ padding: '8px' }}
+            />
+            <div>
+              <Title level={5} style={{ margin: 0, fontSize: '16px' }}>聊天历史</Title>
+              <div style={{ fontSize: '10px', color: '#8c8c8c', lineHeight: 1 }}>
+                {useCloudHistory ? '云端记录' : '本地记录'}
+              </div>
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {cloudHistoryLoading && <Spin size="small" />}
+            {useCloudHistory && (
+              <Button 
+                type="text" 
+                icon={<ReloadOutlined />}
+                onClick={handleRefreshCloudHistory}
+                style={{ padding: '4px' }}
+              />
+            )}
+          </div>
+        </Header>
+      );
+    }
+  };
 
   const handleDeleteHistory = async (historyId: string) => {
     try {
@@ -417,10 +511,141 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
     }
   };
 
-  // 移动端检测
-  const isMobile = window.innerWidth < 768;
+  // 下拉刷新处理
+  const handlePullRefresh = async () => {
+    try {
+      if (useCloudHistory) {
+        await loadCloudHistory(true);
+      }
+      message.success(isMobile ? '刷新成功' : '历史记录已刷新');
+    } catch (error) {
+      console.error('下拉刷新失败:', error);
+      message.error(isMobile ? '刷新失败' : '刷新失败，请重试');
+      throw error;
+    }
+  };
+
+  // 移动端详情显示状态
   const showMobileDetail = isMobile && selectedHistory;
 
+  // 移动端布局
+  if (isMobile) {
+    return (
+      <Layout style={{ 
+        height: '100vh', 
+        background: '#f5f5f5',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        {/* 移动端顶部导航栏 */}
+        {renderMobileHeader()}
+        
+        {/* 主内容区域 */}
+        <Content style={{ 
+          flex: 1,
+          overflow: 'auto',
+          padding: showMobileDetail ? '0' : '8px'
+        }}>
+          {showMobileDetail ? (
+            // 详情页面
+            <div style={{ 
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column'
+            }}>
+              <Spin spinning={loading} style={{ flex: 1, minHeight: 0 }}>
+                <HistoryDetail
+                  history={selectedHistory}
+                  onBack={handleBackToList}
+                  onShare={handleShareHistory}
+                  onDelete={handleDeleteHistory}
+                  showActions={true}
+                  isCloudHistory={!!selectedHistory.cloudMetadata}
+                />
+              </Spin>
+            </div>
+          ) : (
+            // 历史列表页面
+            <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              {/* 数据源切换 */}
+              <Card size="small" style={{ 
+                background: '#fafafa',
+                marginBottom: '8px',
+                borderRadius: '8px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {useCloudHistory ? (
+                      <>
+                        <CloudOutlined style={{ color: '#1890ff' }} />
+                        <Text style={{ fontSize: '12px' }}>云端历史记录</Text>
+                      </>
+                    ) : (
+                      <>
+                        <DatabaseOutlined style={{ color: '#52c41a' }} />
+                        <Text style={{ fontSize: '12px' }}>本地历史记录</Text>
+                      </>
+                    )}
+                  </div>
+                  <Switch
+                    size="small"
+                    checked={useCloudHistory}
+                    onChange={handleCloudHistoryToggle}
+                    loading={cloudHistoryLoading}
+                  />
+                </div>
+              </Card>
+
+              {/* 云端历史记录错误提示 */}
+              {cloudHistoryError && (
+                <Alert
+                  message="加载失败"
+                  description={cloudHistoryError}
+                  type="error"
+                  showIcon
+                  closable
+                  onClose={() => setCloudHistoryError(null)}
+                  style={{ 
+                    fontSize: '12px',
+                    marginBottom: '8px',
+                    borderRadius: '8px'
+                  }}
+                />
+              )}
+
+              {/* 历史记录列表 - 移动端添加下拉刷新 */}
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                <PullToRefresh
+                  onRefresh={handlePullRefresh}
+                  config={{
+                    threshold: 60,
+                    maxPullDistance: 100,
+                    enableHapticFeedback: true,
+                    enableAnimation: true
+                  }}
+                  style={{ height: '100%' }}
+                >
+                  <Spin spinning={cloudHistoryLoading && cloudHistories.length === 0}>
+                    <HistoryList
+                      histories={filteredHistories}
+                      onSelectHistory={handleSelectHistory}
+                      selectedHistoryId={selectedHistory?.id}
+                      loading={loading}
+                      hasMore={useCloudHistory ? cloudPagination.hasMore : false}
+                      onLoadMore={handleLoadMore}
+                      loadingMore={cloudHistoryLoading && cloudHistories.length > 0}
+                    />
+                  </Spin>
+                </PullToRefresh>
+              </div>
+            </div>
+          )}
+        </Content>
+      </Layout>
+    );
+  }
+
+  // 桌面端布局
   return (
     <Layout style={{ 
       height: '100vh', 

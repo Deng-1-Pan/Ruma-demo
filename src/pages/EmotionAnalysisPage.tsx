@@ -14,6 +14,7 @@ import { usePerformanceMonitor, useMemoryMonitor, getAllCacheStats } from '../ut
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
+const { Header, Content } = Layout;
 // RangePicker 已移除 - UI简化
 
 interface EmotionAnalysisPageProps {
@@ -203,6 +204,209 @@ const EmotionAnalysisPage: React.FC<EmotionAnalysisPageProps> = ({
 
   // 导出和分享处理函数已移除 - UI简化
 
+  // 移动端顶部导航栏
+  const renderMobileHeader = () => (
+    <Header style={{
+      background: '#fff',
+      borderBottom: '1px solid #e8e8e8',
+      padding: '0 16px',
+      height: '56px',
+      lineHeight: '56px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      position: 'sticky',
+      top: 0,
+      zIndex: 100
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <Button 
+          type="text" 
+          icon={<ArrowLeftOutlined />}
+          onClick={onBack}
+          style={{ padding: '8px' }}
+        />
+        <div>
+          <Title level={5} style={{ margin: 0, fontSize: '16px' }}>情绪分析</Title>
+          <div style={{ fontSize: '10px', color: '#8c8c8c', lineHeight: 1 }}>
+            数据洞察
+          </div>
+        </div>
+      </div>
+      
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {emotionStore.isLoading && (
+          <Spin size="small" />
+        )}
+        {emotionStore.error && (
+          <Button 
+            type="text" 
+            icon={<ReloadOutlined />}
+            onClick={() => emotionStore.refreshData()}
+            style={{ padding: '4px', color: '#ff4d4f' }}
+          />
+        )}
+      </div>
+    </Header>
+  );
+
+  // 移动端布局
+  if (isMobile) {
+    return (
+      <Layout style={{ 
+        minHeight: '100vh', 
+        width: '100%', 
+        background: '#f5f5f5',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        {/* 移动端顶部导航栏 */}
+        {renderMobileHeader()}
+        
+        {/* 主内容区域 */}
+        <Content style={{ 
+          flex: 1,
+          overflow: 'auto',
+          padding: '8px'
+        }}>
+          {/* 开发环境调试信息 - 移动端精简显示 */}
+          {process.env.NODE_ENV === 'development' && (
+            <Card 
+              style={{ 
+                marginBottom: '8px',
+                borderRadius: '8px'
+              }} 
+              title="🐛 调试" 
+              size="small"
+            >
+              <div style={{ fontSize: '10px', fontFamily: 'monospace' }}>
+                <div><strong>状态:</strong> {emotionStore.isLoading ? '加载中' : emotionStore.error ? '错误' : '正常'}</div>
+                <div><strong>数据:</strong> {emotionStore.summaryData?.length || 0} 条记录</div>
+                <div><strong>时间范围:</strong> {emotionStore.currentTimeRange}</div>
+              </div>
+            </Card>
+          )}
+
+          {/* 加载状态 */}
+          {emotionStore.isLoading && (
+            <Card style={{ 
+              marginBottom: '8px',
+              borderRadius: '8px'
+            }}>
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <Spin size="large" />
+                <div style={{ marginTop: '12px', color: '#666', fontSize: '14px' }}>
+                  正在加载数据...
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* 错误状态 */}
+          {emotionStore.error && (
+            <Card style={{ 
+              marginBottom: '8px',
+              borderRadius: '8px'
+            }}>
+              <Alert
+                message="加载失败"
+                description={emotionStore.error}
+                type="error"
+                showIcon
+                action={
+                  <Button 
+                    size="small" 
+                    icon={<ReloadOutlined />}
+                    onClick={() => emotionStore.refreshData()}
+                  >
+                    重试
+                  </Button>
+                }
+              />
+            </Card>
+          )}
+
+          {/* 分析内容 - 移动端优化的标签页 */}
+          {!emotionStore.isLoading && !emotionStore.error && (
+            <Card style={{ 
+              borderRadius: '8px',
+              padding: '0'
+            }}>
+              <Tabs 
+                activeKey={activeTab} 
+                onChange={handleTabChange as any}
+                tabPosition="top"
+                size="small"
+                centered
+                style={{ 
+                  margin: 0
+                }}
+                tabBarStyle={{
+                  marginBottom: '8px',
+                  padding: '0 8px'
+                }}
+              >
+                <TabPane tab="📊 报告" key="report">
+                  <div style={{ padding: '8px' }}>
+                    <EmotionReport 
+                      data={emotionData}
+                      timeRange={emotionStore.currentTimeRange}
+                      onTimeRangeChange={handleTimeRangeChange}
+                    />
+                  </div>
+                </TabPane>
+
+                <TabPane tab="🗓️ 日历" key="calendar">
+                  <div style={{ padding: '8px', textAlign: 'center' }}>
+                    <EmotionCalendar 
+                      data={emotionStore.analysisResult?.calendar || []}
+                      title="情绪日历"
+                      size="small"
+                      onDateSelect={(date, emotions) => {
+                        console.log('Selected date:', date, emotions);
+                      }}
+                    />
+                  </div>
+                </TabPane>
+
+                <TabPane tab="🕸️ 图谱" key="knowledge">
+                  <div style={{ 
+                    padding: '8px',
+                    overflowX: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}>
+                    <InteractiveEmotionGraph 
+                      data={emotionStore.analysisResult?.knowledgeGraph || { 
+                        nodes: [], 
+                        edges: [], 
+                        statistics: { 
+                          totalNodes: 0, 
+                          totalEdges: 0, 
+                          dominantCauses: [],
+                          emotionNodeCount: 0,
+                          causeNodeCount: 0,
+                          avgConnections: 0,
+                          maxWeight: 0,
+                          strongestConnections: [],
+                          clusters: []
+                        } 
+                      }}
+                      title="情绪关系图谱"
+                      height={300}
+                      className="emotion-knowledge-graph"
+                    />
+                  </div>
+                </TabPane>
+              </Tabs>
+            </Card>
+          )}
+        </Content>
+      </Layout>
+    );
+  }
+
+  // 桌面端布局
   return (
     <Layout style={{ minHeight: '100vh', width: '100%', background: '#f5f5f5' }}>
       <div style={responsiveStyles.containerStyle}>
@@ -211,31 +415,27 @@ const EmotionAnalysisPage: React.FC<EmotionAnalysisPageProps> = ({
           <div style={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
-            alignItems: isMobile ? 'flex-start' : 'center',
-            flexDirection: isMobile ? 'column' : 'row',
-            gap: isMobile ? '12px' : '0'
+            alignItems: 'center',
+            flexDirection: 'row',
+            gap: '0'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <Button 
                 type="text" 
                 icon={<ArrowLeftOutlined />} 
                 onClick={onBack}
-                size={isMobile ? 'small' : 'middle'}
+                size="middle"
               >
-                {isMobile ? '' : '返回'}
+                返回
               </Button>
               <Title 
-                level={isMobile ? 4 : 3} 
+                level={3} 
                 style={{ ...responsiveStyles.titleStyle, margin: 0 }}
               >
                 情绪分析
               </Title>
             </div>
-
-            {/* 日期选择器、导出和分享按钮已移除 - UI简化 */}
           </div>
-          
-          {/* 移动端日期选择器已移除 - UI简化 */}
         </Card>
 
         {/* 开发环境调试信息 */}

@@ -3,6 +3,7 @@ import ReactECharts from 'echarts-for-react';
 import { Card, Typography, Select, Space } from 'antd';
 import dayjs from 'dayjs';
 import { EMOTION_COLORS, EMOTION_CATEGORY_MAP, EMOTION_CHINESE_MAP } from '../../stores/emotionAnalysisStore';
+import { useResponsive } from '../../utils/responsiveUtils';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -36,6 +37,16 @@ const EmotionChart: React.FC<EmotionChartProps> = ({
   onTimeRangeChange,
   showControls = true
 }) => {
+  
+  // 响应式检测
+  const { isMobile, isTablet } = useResponsive();
+  
+  // 响应式高度调整
+  const chartHeight = useMemo(() => {
+    if (isMobile) return Math.min(height * 0.8, 300);
+    if (isTablet) return Math.min(height * 0.9, 350);
+    return height;
+  }, [height, isMobile, isTablet]);
 
   // 🎯 直接使用传入的数据，信任Store层已经过滤了正确的时间范围
   const chartData = useMemo(() => {
@@ -171,33 +182,33 @@ const EmotionChart: React.FC<EmotionChartProps> = ({
     }).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   }, [chartData]);
 
-  // 🎨 图表配置
-  const chartOption = useMemo(() => {
-    // 🎯 创建数据映射：将timelineData映射到完整时间范围
-    const dataMap = new Map(timelineData.map(item => [item.date, item]));
-    
-    // 创建主要数据点（映射到完整时间范围）
-    const pointData = fullTimeRange.map((date, index) => {
-      const dayData = dataMap.get(date);
-      if (dayData) {
-        return {
-          value: [index, dayData.score, dayData.dominantEmotion, dayData.dominantColor], // 使用index而不是date
-          itemStyle: {
-            color: dayData.dominantColor,
-            borderWidth: 2,
-            borderColor: '#fff'
-          }
-        };
-      } else {
-        return null; // 没有数据的日期返回null
-      }
-    }).filter(item => item !== null); // 过滤掉null值
+      // 🎨 图表配置
+    const chartOption = useMemo(() => {
+      // 🎯 创建数据映射：将timelineData映射到完整时间范围
+      const dataMap = new Map(timelineData.map(item => [item.date, item]));
+      
+      // 创建主要数据点（映射到完整时间范围）
+      const pointData = fullTimeRange.map((date, index) => {
+        const dayData = dataMap.get(date);
+        if (dayData) {
+          return {
+            value: [index, dayData.score, dayData.dominantEmotion, dayData.dominantColor], // 使用index而不是date
+            itemStyle: {
+              color: dayData.dominantColor,
+              borderWidth: isMobile ? 1 : 2,
+              borderColor: '#fff'
+            }
+          };
+        } else {
+          return null; // 没有数据的日期返回null
+        }
+      }).filter(item => item !== null); // 过滤掉null值
 
-    // 创建渐变色线段series
-    const lineSeries = [];
-    for (let i = 0; i < timelineData.length - 1; i++) {
-      const currentPoint = timelineData[i];
-      const nextPoint = timelineData[i + 1];
+      // 创建渐变色线段series
+      const lineSeries = [];
+      for (let i = 0; i < timelineData.length - 1; i++) {
+        const currentPoint = timelineData[i];
+        const nextPoint = timelineData[i + 1];
       
       // 找到当前点和下一点在完整时间范围中的索引
       const currentIndex = fullTimeRange.indexOf(currentPoint.date);
@@ -245,12 +256,16 @@ const EmotionChart: React.FC<EmotionChartProps> = ({
         text: title,
         left: 'center',
         textStyle: {
-          fontSize: 16,
+          fontSize: isMobile ? 14 : 16,
           fontWeight: 'normal'
         }
       },
       tooltip: {
         trigger: 'axis',
+        confine: true, // 移动端限制在图表区域内
+        textStyle: {
+          fontSize: isMobile ? 12 : 14
+        },
         formatter: (params: any) => {
           // 找到点数据（第一个series）
           const pointParam = params.find((p: any) => p.seriesType === 'line' && p.data.value);
@@ -265,7 +280,7 @@ const EmotionChart: React.FC<EmotionChartProps> = ({
                           score > -20 ? '被动' : '高度被动';
           
           return `
-            <div style="text-align: left;">
+            <div style="text-align: left; font-size: ${isMobile ? '12px' : '14px'};">
               <div><strong>${date}</strong></div>
               <div>主导情绪: <span style="color: ${color}">●</span> ${emotionCn}</div>
               <div>情绪倾向: ${tendency}</div>
@@ -278,25 +293,26 @@ const EmotionChart: React.FC<EmotionChartProps> = ({
         type: 'category',
         data: fullTimeRange, // 🎯 使用完整时间范围而不是仅有数据的日期
         axisLabel: {
+          fontSize: isMobile ? 10 : 12,
           formatter: (value: string) => {
             // 🎯 根据时间范围调整标签格式
             switch (timeRange) {
               case 'week':
-                return dayjs(value).format('MM/DD');
+                return dayjs(value).format(isMobile ? 'M/D' : 'MM/DD');
               case 'month':
-                return dayjs(value).format('MM/DD');
+                return dayjs(value).format(isMobile ? 'M/D' : 'MM/DD');
               case 'quarter':
-                return dayjs(value).format('MM/DD');
+                return dayjs(value).format(isMobile ? 'M/D' : 'MM/DD');
               case 'year':
                 // 一年数据，只显示月份，减少x轴拥挤
                 const day = dayjs(value).date();
-                return day === 1 ? dayjs(value).format('MM/DD') : ''; // 只显示每月1号
+                return day === 1 ? dayjs(value).format(isMobile ? 'M/D' : 'MM/DD') : ''; // 只显示每月1号
               default:
-                return dayjs(value).format('MM/DD');
+                return dayjs(value).format(isMobile ? 'M/D' : 'MM/DD');
             }
           },
           interval: timeRange === 'year' ? 0 : 'auto', // 年份视图强制显示所有标签（已过滤）
-          rotate: timeRange === 'year' ? 45 : 0 // 年份视图旋转标签避免重叠
+          rotate: isMobile ? (timeRange === 'year' ? 30 : 0) : (timeRange === 'year' ? 45 : 0) // 移动端减小旋转角度
         },
         // 🎯 设置x轴的显示范围，确保显示完整时间段
         min: 0,
@@ -308,13 +324,14 @@ const EmotionChart: React.FC<EmotionChartProps> = ({
         max: 100,
         interval: 50,
         axisLabel: {
+          fontSize: isMobile ? 10 : 12,
           formatter: (value: number) => {
             const labels = {
-              '-100': '高度被动',
-              '-50': '被动', 
+              '-100': isMobile ? '高度被动' : '高度被动',
+              '-50': isMobile ? '被动' : '被动', 
               '0': '中性',
-              '50': '主动',
-              '100': '高度主动'
+              '50': isMobile ? '主动' : '主动',
+              '100': isMobile ? '高度主动' : '高度主动'
             };
             return labels[value.toString() as keyof typeof labels] || value.toString();
           }
@@ -338,7 +355,7 @@ const EmotionChart: React.FC<EmotionChartProps> = ({
           xAxisIndex: 0, // 确保使用同一个x轴
           data: pointData,
           symbol: 'circle',
-          symbolSize: 8,
+          symbolSize: isMobile ? 6 : 8,
           lineStyle: {
             width: 0, // 不显示线
             opacity: 0
@@ -372,10 +389,10 @@ const EmotionChart: React.FC<EmotionChartProps> = ({
         ...lineSeries
       ],
       grid: {
-        left: '15%',
-        right: '10%',
-        bottom: '15%',
-        top: '20%'
+        left: isMobile ? '20%' : '15%',
+        right: isMobile ? '5%' : '10%',
+        bottom: isMobile ? '20%' : '15%',
+        top: isMobile ? '15%' : '20%'
       },
       // 添加参考线
       graphic: [
@@ -426,25 +443,31 @@ const EmotionChart: React.FC<EmotionChartProps> = ({
   return (
     <Card
       title={showControls ? (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>{title}</span>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? '8px' : '0'
+        }}>
+          <span style={{ fontSize: isMobile ? '14px' : '16px' }}>{title}</span>
           <Space>
             <Select
               value={timeRange} 
               onChange={handleTimeRangeChange}
-              style={{ width: 100 }}
-              size="small"
+              style={{ width: isMobile ? 80 : 100 }}
+              size={isMobile ? 'small' : 'small'}
             >
-              <Option value="week">近一周</Option>
-              <Option value="month">近一月</Option>
-              <Option value="quarter">近三月</Option>
-              <Option value="year">近一年</Option>
+              <Option value="week">{isMobile ? '一周' : '近一周'}</Option>
+              <Option value="month">{isMobile ? '一月' : '近一月'}</Option>
+              <Option value="quarter">{isMobile ? '三月' : '近三月'}</Option>
+              <Option value="year">{isMobile ? '一年' : '近一年'}</Option>
             </Select>
           </Space>
         </div>
       ) : title}
-      style={{ height }}
-      bodyStyle={{ height: showControls ? height - 60 : height - 40 }}
+      style={{ height: chartHeight }}
+      bodyStyle={{ height: showControls ? chartHeight - 60 : chartHeight - 40 }}
     >
       <ReactECharts 
         option={chartOption} 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Input, Button, Space, Typography } from 'antd';
 import { SendOutlined } from '@ant-design/icons';
+import { useResponsive } from '../../utils/responsiveUtils';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -27,6 +28,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   onDemoSend
 }) => {
   const [inputValue, setInputValue] = useState('');
+  const { isMobile } = useResponsive();
 
   useEffect(() => {
     if (demoMode && demoTypingText !== undefined) {
@@ -51,7 +53,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !isMobile) {
       e.preventDefault();
       handleSend();
     }
@@ -81,16 +83,25 @@ const MessageInput: React.FC<MessageInputProps> = ({
     color: '#1890ff'
   } : {};
 
+  const containerPadding = isMobile ? '12px' : 'var(--space-lg)';
+  const buttonSize = isMobile ? 'middle' : 'large';
+  const buttonMinHeight = isMobile ? '36px' : '40px';
+  const fontSize = isMobile ? '14px' : 'var(--font-size-base)';
+  const maxRows = isMobile ? 3 : 4;
+
   return (
     <div 
       className="message-input-container"
       style={{
-        padding: 'var(--space-lg)',
+        padding: containerPadding,
         borderTop: '1px solid var(--border-color)',
         backgroundColor: 'var(--surface)',
         position: 'sticky',
         bottom: 0,
         zIndex: 10,
+        ...(isMobile ? {
+          paddingBottom: 'max(12px, env(safe-area-inset-bottom))'
+        } : {}),
         ...(demoMode ? { 
           background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
           borderTop: '2px solid #1890ff'
@@ -99,17 +110,17 @@ const MessageInput: React.FC<MessageInputProps> = ({
     >
       <div 
         style={{ 
-          maxWidth: '800px', 
+          maxWidth: isMobile ? '100%' : '800px', 
           margin: '0 auto',
           width: '100%'
         }}
       >
         {demoMode && (
           <div style={{
-            marginBottom: 'var(--space-sm)',
+            marginBottom: isMobile ? '8px' : 'var(--space-sm)',
             textAlign: 'center',
             color: '#1890ff',
-            fontSize: 'var(--font-size-sm)',
+            fontSize: isMobile ? '12px' : 'var(--font-size-sm)',
             fontWeight: 'bold'
           }}>
             🎭 演示模式：正在模拟用户输入...
@@ -120,7 +131,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           style={{ 
             display: 'flex', 
             width: '100%',
-            gap: 'var(--space-sm)'
+            gap: isMobile ? '8px' : 'var(--space-sm)'
           }}
         >
           <div style={{ flex: 1, position: 'relative' }}>
@@ -131,13 +142,13 @@ const MessageInput: React.FC<MessageInputProps> = ({
               placeholder={demoMode ? "演示模式下自动输入..." : placeholder}
               autoSize={{ 
                 minRows: 1, 
-                maxRows: 4 
+                maxRows: maxRows
               }}
               disabled={disabled}
               style={{
                 resize: 'none',
-                borderRadius: 'var(--border-radius-lg)',
-                fontSize: 'var(--font-size-base)',
+                borderRadius: isMobile ? '8px' : 'var(--border-radius-lg)',
+                fontSize: fontSize,
                 lineHeight: 1.6,
                 ...demoInputStyle
               }}
@@ -146,14 +157,15 @@ const MessageInput: React.FC<MessageInputProps> = ({
             <div 
               style={{
                 position: 'absolute',
-                bottom: 'var(--space-xs)',
-                right: 'var(--space-sm)',
-                fontSize: 'var(--font-size-xs)',
+                bottom: isMobile ? '4px' : 'var(--space-xs)',
+                right: isMobile ? '6px' : 'var(--space-sm)',
+                fontSize: isMobile ? '10px' : 'var(--font-size-xs)',
                 color: isNearLimit ? 'var(--warning-color)' : 'var(--text-tertiary)',
                 background: 'var(--surface)',
-                padding: '2px 4px',
+                padding: '1px 3px',
                 borderRadius: 'var(--border-radius-sm)',
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                opacity: 0.8
               }}
             >
               {inputValue.length}/{maxLength}
@@ -166,43 +178,52 @@ const MessageInput: React.FC<MessageInputProps> = ({
             onClick={handleSend}
             loading={isLoading}
             disabled={!canSend}
-            size="large"
+            size={buttonSize}
             style={{
               height: 'auto',
-              minHeight: '40px',
-              borderRadius: 'var(--border-radius-lg)',
+              minHeight: buttonMinHeight,
+              borderRadius: isMobile ? '8px' : 'var(--border-radius-lg)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              ...(isMobile ? {
+                minWidth: '60px',
+                fontSize: '12px'
+              } : {}),
               ...(demoMode && !canSend ? {
                 opacity: 0.6,
                 cursor: 'not-allowed'
               } : {})
             }}
           >
-            {demoMode ? (canSend ? '发送' : '演示中') : '发送'}
+            {isMobile 
+              ? (demoMode ? (canSend ? '发送' : '...') : '发送')
+              : (demoMode ? (canSend ? '发送' : '演示中') : '发送')
+            }
           </Button>
         </Space.Compact>
         
-        <div 
-          style={{
-            marginTop: 'var(--space-xs)',
-            textAlign: 'center'
-          }}
-        >
-          <Text 
-            type="secondary" 
-            style={{ 
-              fontSize: 'var(--font-size-xs)',
-              opacity: 0.7
+        {!isMobile && (
+          <div 
+            style={{
+              marginTop: 'var(--space-xs)',
+              textAlign: 'center'
             }}
           >
-            {demoMode 
-              ? '演示模式：正在自动模拟用户对话' 
-              : '按 Enter 发送，Shift + Enter 换行'
-            }
-          </Text>
-        </div>
+            <Text 
+              type="secondary" 
+              style={{ 
+                fontSize: 'var(--font-size-xs)',
+                opacity: 0.7
+              }}
+            >
+              {demoMode 
+                ? '演示模式：正在自动模拟用户对话' 
+                : '按 Enter 发送，Shift + Enter 换行'
+              }
+            </Text>
+          </div>
+        )}
       </div>
     </div>
   );

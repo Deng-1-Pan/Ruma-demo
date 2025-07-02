@@ -159,6 +159,7 @@ const ChatReportDisplay: React.FC<ChatReportDisplayProps> = ({
                 showStats={true}
                 showControls={false}
                 useOSSData={false}
+                showLegend={false}
               />
             </div>
           </Col>

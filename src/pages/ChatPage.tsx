@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Layout, Card, Typography, Space, Button, message, Modal } from 'antd';
-import { HistoryOutlined, WifiOutlined, DisconnectOutlined, ReloadOutlined, BarChartOutlined, ClearOutlined, ExclamationCircleOutlined, LogoutOutlined, FileTextOutlined, StopOutlined } from '@ant-design/icons';
+import { Layout, Card, Typography, Space, Button, message, Modal, Drawer } from 'antd';
+import { HistoryOutlined, WifiOutlined, DisconnectOutlined, ReloadOutlined, BarChartOutlined, ClearOutlined, ExclamationCircleOutlined, LogoutOutlined, FileTextOutlined, StopOutlined, MenuOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Message, EmotionData } from '../types';
 import MessageBubble from '../components/chat/MessageBubble';
 import MessageInput from '../components/chat/MessageInput';
 import TypingIndicator from '../components/chat/TypingIndicator';
 import ChatReportDisplay from '../components/chat/ChatReportDisplay';
+import PullToRefresh from '../components/common/PullToRefresh';
 import { demoApiClient as apiClient } from '../utils/demoApiClient';
 import useWebSocket from '../hooks/useWebSocket';
 import { 
@@ -26,14 +27,22 @@ import {
 } from '../stores/chatStore';
 import { useIsAuthenticated } from '../stores';
 import { resetAllStores } from '../stores/utils';
+import { useResponsive } from '../utils/responsiveUtils';
+// import { useGesture } from '../utils/gestureUtils';
 
-const { Sider, Content } = Layout;
+const { Sider, Content, Header } = Layout;
 const { Title, Text } = Typography;
 
 const ChatPage: React.FC = () => {
   // 路由导航
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // 响应式检测
+  const { isMobile } = useResponsive();
+  
+  // 移动端菜单状态
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // 使用Store状态
   const messages = useMessages();
@@ -905,6 +914,38 @@ const ChatPage: React.FC = () => {
     });
   };
 
+  // 下拉刷新处理
+  const handlePullRefresh = async () => {
+    console.log('🔄 ChatPage: 执行下拉刷新');
+    
+    try {
+      // 1. 重新连接WebSocket
+      if (!wsConnected) {
+        await wsConnect();
+      }
+      
+      // 2. 重新初始化聊天线程
+      if (!currentThreadId) {
+        await initializeChatThread();
+      }
+      
+      // 3. 检查报告生成状态
+      await checkAndRecoverReportGeneration();
+      
+      // 4. 显示成功消息（移动端简化）
+      if (isMobile) {
+        message.success('刷新成功');
+      } else {
+        message.success('连接已刷新');
+      }
+      
+    } catch (error) {
+      console.error('🔄 ChatPage: 下拉刷新失败:', error);
+      message.error(isMobile ? '刷新失败' : '刷新失败，请重试');
+      throw error; // 让PullToRefresh组件显示错误状态
+    }
+  };
+
   // 连接状态指示器
   const renderConnectionStatus = () => {
     const isFullyConnected = wsConnected && hybridConnectionStatus === 'connected';
@@ -916,11 +957,11 @@ const ChatPage: React.FC = () => {
     
     if (isFullyConnected) {
       icon = <WifiOutlined />;
-      text = 'WebSocket已连接';
+      text = isMobile ? '已连接' : 'WebSocket已连接';
       color = '#52c41a';
     } else if (hybridConnectionStatus === 'connected') {
       icon = <DisconnectOutlined />;
-      text = 'HTTP模式';
+      text = isMobile ? 'HTTP' : 'HTTP模式';
       color = '#faad14';
     } else if (hasError) {
       icon = <DisconnectOutlined />;
@@ -935,7 +976,7 @@ const ChatPage: React.FC = () => {
     return (
       <Space style={{ color }}>
         {icon}
-        <Text style={{ color, fontSize: '12px' }}>{text}</Text>
+        <Text style={{ color, fontSize: isMobile ? '11px' : '12px' }}>{text}</Text>
         {hasError && (
           <Button 
             type="link" 
@@ -950,9 +991,390 @@ const ChatPage: React.FC = () => {
     );
   };
 
+  // 渲染侧边栏内容（可在桌面端侧边栏和移动端Drawer中复用）
+  const renderSidebarContent = () => (
+    <>
+      <div style={{ marginBottom: isMobile ? '16px' : '24px' }}>
+        <Title level={4} style={{ margin: 0, fontSize: isMobile ? '16px' : '18px' }}>
+          RuMa GPT
+        </Title>
+        <Text type="secondary" style={{ fontSize: isMobile ? '12px' : '14px' }}>
+          智能情感支持助手
+        </Text>
+      </div>
+      
+      {/* 连接状态 */}
+      <Card size="small" style={{ marginBottom: '16px' }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? '8px' : '0'
+        }}>
+          <Text strong style={{ fontSize: isMobile ? '12px' : '14px' }}>连接状态</Text>
+          {renderConnectionStatus()}
+        </div>
+      </Card>
+
+      {/* 快捷操作 */}
+      <Space direction="vertical" style={{ width: '100%' }} size={isMobile ? 'small' : 'middle'}>
+        <Button 
+          icon={<ClearOutlined />} 
+          block 
+          danger
+          size={isMobile ? 'middle' : 'large'}
+          style={{ textAlign: 'left', justifyContent: 'flex-start' }}
+          onClick={() => {
+            handleClearChat();
+            if (isMobile) setMobileMenuOpen(false);
+          }}
+          disabled={!currentThreadId || messages.length === 0}
+        >
+          清空对话
+        </Button>
+        <Button 
+          icon={<HistoryOutlined />} 
+          block 
+          size={isMobile ? 'middle' : 'large'}
+          style={{ textAlign: 'left', justifyContent: 'flex-start' }}
+          onClick={() => {
+            navigate('/history');
+            if (isMobile) setMobileMenuOpen(false);
+          }}
+        >
+          查看历史记录
+        </Button>
+        <Button 
+          icon={<BarChartOutlined />} 
+          block 
+          size={isMobile ? 'middle' : 'large'}
+          style={{ textAlign: 'left', justifyContent: 'flex-start' }}
+          onClick={() => {
+            navigate('/emotion-analysis');
+            if (isMobile) setMobileMenuOpen(false);
+          }}
+        >
+          情绪分析
+        </Button>
+        
+        {/* 登出按钮 */}
+        <Button 
+          icon={<LogoutOutlined />} 
+          block 
+          danger
+          size={isMobile ? 'middle' : 'large'}
+          style={{ textAlign: 'left', justifyContent: 'flex-start', marginTop: '16px' }}
+          onClick={() => {
+            handleLogout();
+            if (isMobile) setMobileMenuOpen(false);
+          }}
+        >
+          退出登录
+        </Button>
+        
+        {/* 调试按钮 - 仅开发环境显示 */}
+        {process.env.NODE_ENV === 'development' && (
+          <Button 
+            type="primary" 
+            onClick={() => {
+              handleJoinRoom();
+              if (isMobile) setMobileMenuOpen(false);
+            }}
+            block
+            size={isMobile ? 'middle' : 'large'}
+            disabled={!currentThreadId}
+            style={{ marginTop: '8px' }}
+          >
+            🔧 加入WebSocket房间
+          </Button>
+        )}
+      </Space>
+    </>
+  );
+
+  // 移动端顶部导航栏
+  const renderMobileHeader = () => (
+    <Header style={{
+      background: '#fff',
+      borderBottom: '1px solid #e8e8e8',
+      padding: '0 16px',
+      height: '56px',
+      lineHeight: '56px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      position: 'sticky',
+      top: 0,
+      zIndex: 100
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <Button 
+          type="text" 
+          icon={<MenuOutlined />}
+          onClick={() => setMobileMenuOpen(true)}
+          style={{ padding: '8px' }}
+        />
+        <div>
+          <Text strong style={{ fontSize: '16px' }}>RuMa GPT</Text>
+          <div style={{ fontSize: '10px', color: '#8c8c8c', lineHeight: 1 }}>
+            智能情感支持
+          </div>
+        </div>
+      </div>
+      
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {renderConnectionStatus()}
+      </div>
+    </Header>
+  );
+
+  // 移动端布局
+  if (isMobile) {
     return (
+      <Layout style={{ 
+        height: '100vh', 
+        background: '#f5f5f5',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        {/* 移动端顶部导航栏 */}
+        {renderMobileHeader()}
+        
+        {/* 移动端滑出菜单 */}
+        <Drawer
+          title="菜单"
+          placement="left"
+          closable={true}
+          onClose={() => setMobileMenuOpen(false)}
+          open={mobileMenuOpen}
+          width={280}
+          styles={{
+            body: { padding: '16px' }
+          }}
+        >
+          {renderSidebarContent()}
+        </Drawer>
+
+        {/* 主内容区域 */}
+        <Content style={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          padding: '8px',
+          overflow: 'hidden',
+          flex: 1
+        }}>
+          {/* 消息列表 - 移动端添加下拉刷新 */}
+          <div style={{ 
+            flex: 1, 
+            marginBottom: '8px',
+            background: '#fff',
+            borderRadius: '12px',
+            border: '1px solid #e8e8e8',
+            overflow: 'hidden'
+          }}>
+            <PullToRefresh
+              onRefresh={handlePullRefresh}
+              config={{
+                threshold: 60,
+                maxPullDistance: 100,
+                enableHapticFeedback: true,
+                enableAnimation: true
+              }}
+              style={{
+                height: '100%',
+                padding: '12px'
+              }}
+            >
+              <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
+                {messages.map((message) => (
+                  <MessageBubble 
+                    key={message.id}
+                    message={message}
+                    showAvatar={!isMobile}
+                    showTimestamp={true}
+                  />
+                ))}
+              
+              {/* 显示生成报告按钮 */}
+              {shouldShowGenerateReport && !currentReport && !isGeneratingReport && (
+                <div style={{ 
+                  textAlign: 'center', 
+                  margin: '16px 0',
+                  padding: '12px',
+                  borderTop: '1px solid #f0f0f0'
+                }}>
+                  <Button 
+                    type="primary"
+                    icon={<FileTextOutlined />}
+                    size="large"
+                    onClick={generateReport}
+                    style={{
+                      background: 'linear-gradient(45deg, #1890ff, #52c41a)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      height: '44px',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      width: '100%'
+                    }}
+                  >
+                    🎯 生成情绪分析报告
+                  </Button>
+                  <div style={{ marginTop: '6px', color: '#8c8c8c', fontSize: '11px' }}>
+                    分析本次对话的情绪变化
+                  </div>
+                </div>
+              )}
+
+              {/* 报告恢复选项 - 移动端优化 */}
+              {!shouldShowGenerateReport && !currentReport && !isGeneratingReport && messages.length > 0 && (() => {
+                const startTimeStr = localStorage.getItem('reportGenerationStartTime');
+                const threadId = localStorage.getItem('reportGenerationThreadId');
+                const messagesStr = localStorage.getItem('reportGenerationMessages');
+                
+                if (startTimeStr && threadId && messagesStr && threadId === currentThreadId) {
+                  const startTime = parseInt(startTimeStr);
+                  const elapsedTime = Date.now() - startTime;
+                  
+                  if (elapsedTime < 5 * 60 * 1000) {
+                    return (
+                      <div style={{ 
+                        textAlign: 'center', 
+                        margin: '16px 0',
+                        padding: '12px',
+                        borderTop: '1px solid #f0f0f0',
+                        background: '#fffbe6',
+                        borderRadius: '8px',
+                        border: '1px solid #ffd666'
+                      }}>
+                        <Text type="warning" style={{ marginBottom: '8px', display: 'block', fontSize: '12px' }}>
+                          ⚠️ 检测到未完成的报告生成
+                        </Text>
+                        <Space direction="vertical" style={{ width: '100%' }} size="small">
+                          <Button 
+                            type="primary"
+                            icon={<ReloadOutlined />}
+                            onClick={generateReport}
+                            size="small"
+                            block
+                          >
+                            重新生成
+                          </Button>
+                          <Button 
+                            onClick={() => {
+                              localStorage.removeItem('reportGenerationStartTime');
+                              localStorage.removeItem('reportGenerationThreadId');
+                              localStorage.removeItem('reportGenerationMessages');
+                              window.location.reload();
+                            }}
+                            size="small"
+                            block
+                          >
+                            取消生成
+                          </Button>
+                        </Space>
+                      </div>
+                    );
+                  }
+                }
+                return null;
+              })()}
+
+              {/* 显示报告生成中的等待动画 */}
+              {isGeneratingReport && (
+                <div style={{ 
+                  textAlign: 'center', 
+                  margin: '16px 0',
+                  padding: '16px',
+                  borderTop: '1px solid #f0f0f0'
+                }}>
+                  <TypingIndicator 
+                    typingUsers={[
+                      { id: 'report-ai', name: '正在生成情绪分析报告', isBot: true }
+                    ]}
+                    showUserNames={true}
+                    animationMode="ripple"
+                    theme="emotion"
+                    waitingMessage="正在深度分析您的情绪状态..."
+                  />
+                </div>
+              )}
+
+              {/* 显示生成的报告 */}
+              {currentReport && (
+                <ChatReportDisplay 
+                  report={currentReport}
+                />
+              )}
+
+              {/* 结束聊天按钮 */}
+              {currentReport && (
+                <div style={{ 
+                  textAlign: 'center', 
+                  margin: '16px 0',
+                  padding: '12px',
+                  borderTop: '1px solid #f0f0f0'
+                }}>
+                  <Button 
+                    icon={<StopOutlined />}
+                    size="middle"
+                    onClick={endCurrentChat}
+                    block
+                    style={{
+                      borderRadius: '8px',
+                      height: '40px'
+                    }}
+                  >
+                    结束当前聊天
+                  </Button>
+                  <div style={{ marginTop: '6px', color: '#8c8c8c', fontSize: '11px' }}>
+                    清空对话记录，开始新的聊天
+                  </div>
+                </div>
+              )}
+
+                {isTyping && !isGeneratingReport && (
+                  <TypingIndicator 
+                    typingUsers={[
+                      { id: 'ai', name: 'RuMa AI', isBot: true }
+                    ]}
+                    showUserNames={!isMobile}
+                    animationMode="ripple"
+                    theme="emotion"
+                  />
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            </PullToRefresh>
+          </div>
+
+          {/* 消息输入框 - 根据showInputBox状态控制显示 */}
+          {showInputBox && (
+            <MessageInput 
+              onSendMessage={handleSendMessage}
+              isLoading={isTyping}
+              disabled={!isAuthenticated}
+              placeholder={
+                isAuthenticated 
+                  ? "输入您的想法..." 
+                  : "请先登录以开始对话"
+              }
+              maxLength={500}
+              demoMode={demoMode}
+              demoTypingText={currentDemoTyping}
+              onDemoSend={handleDemoSend}
+            />
+          )}
+        </Content>
+      </Layout>
+    );
+  }
+
+  // 桌面端布局
+  return (
     <Layout style={{ height: '100vh', background: '#f5f5f5' }}>
-      {/* 侧边栏 */}
+      {/* 桌面端侧边栏 */}
       <Sider 
         width={280} 
         style={{ 
@@ -961,74 +1383,7 @@ const ChatPage: React.FC = () => {
           padding: '16px'
         }}
       >
-        <div style={{ marginBottom: '24px' }}>
-          <Title level={4} style={{ margin: 0 }}>RuMa GPT</Title>
-          <Text type="secondary">智能情感支持助手</Text>
-        </div>
-        
-        {/* 连接状态 */}
-        <Card size="small" style={{ marginBottom: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text strong>连接状态</Text>
-            {renderConnectionStatus()}
-          </div>
-        </Card>
-
-
-
-        {/* 快捷操作 */}
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <Button 
-            icon={<ClearOutlined />} 
-            block 
-            danger
-            style={{ textAlign: 'left' }}
-            onClick={handleClearChat}
-            disabled={!currentThreadId || messages.length === 0}
-          >
-            清空对话
-          </Button>
-          <Button 
-            icon={<HistoryOutlined />} 
-            block 
-            style={{ textAlign: 'left' }}
-            onClick={() => window.location.href = '/history'}
-          >
-            查看历史记录
-          </Button>
-          <Button 
-            icon={<BarChartOutlined />} 
-            block 
-            style={{ textAlign: 'left' }}
-            onClick={() => window.location.href = '/emotion-analysis'}
-          >
-            情绪分析
-          </Button>
-          
-          {/* 登出按钮 */}
-          <Button 
-            icon={<LogoutOutlined />} 
-            block 
-            danger
-            style={{ textAlign: 'left', marginTop: '16px' }}
-            onClick={handleLogout}
-          >
-            退出登录
-          </Button>
-          
-          {/* 调试按钮 - 仅开发环境显示 */}
-          {process.env.NODE_ENV === 'development' && (
-            <Button 
-              type="primary" 
-              onClick={handleJoinRoom}
-              block
-              disabled={!currentThreadId}
-              style={{ marginTop: '8px' }}
-            >
-              🔧 加入WebSocket房间
-            </Button>
-          )}
-        </Space>
+        {renderSidebarContent()}
       </Sider>
 
       {/* 主内容区域 */}

@@ -3,6 +3,7 @@ import { Calendar, Tooltip, Card, Typography, Badge } from 'antd';
 import type { Dayjs } from 'dayjs';
 import { CalendarEmotionData } from '../../types/emotion';
 import { EMOTION_COLORS, EMOTION_CHINESE_MAP } from '../../stores/emotionAnalysisStore';
+import { useResponsive } from '../../utils/responsiveUtils';
 
 const { Title } = Typography;
 
@@ -36,6 +37,16 @@ const EmotionCalendar: React.FC<EmotionCalendarProps> = ({
   className
 }) => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  
+  // 响应式检测
+  const { isMobile, isTablet } = useResponsive();
+  
+  // 动态调整size属性
+  const actualSize = useMemo(() => {
+    if (isMobile) return 'small';
+    if (isTablet) return size === 'large' ? 'medium' : size;
+    return size;
+  }, [size, isMobile, isTablet]);
 
   // 将数据转换为日期索引的Map
   const emotionDataMap = useMemo(() => {
@@ -63,7 +74,7 @@ const EmotionCalendar: React.FC<EmotionCalendarProps> = ({
   const renderEmotionDots = (emotions: CalendarEmotionData['emotions']): React.ReactNode => {
     if (!emotions || emotions.length === 0) return null;
 
-    const config = CELL_SIZE_CONFIG[size];
+    const config = CELL_SIZE_CONFIG[actualSize];
     
     // 最多显示3个主要情绪
     const topEmotions = emotions
@@ -184,7 +195,7 @@ const EmotionCalendar: React.FC<EmotionCalendarProps> = ({
     const emotions = getDateEmotions(date);
     const dateStr = date.format('YYYY-MM-DD');
     const isSelected = selectedDate === dateStr;
-    const config = CELL_SIZE_CONFIG[size];
+    const config = CELL_SIZE_CONFIG[actualSize];
     
     if (!emotions || emotions.recordCount === 0) {
       return (
@@ -296,7 +307,12 @@ const EmotionCalendar: React.FC<EmotionCalendarProps> = ({
     }
 
     return (
-      <div style={{ padding: 8, display: 'flex', justifyContent: 'center', gap: 8 }}>
+      <div style={{ 
+        padding: isMobile ? 4 : 8, 
+        display: 'flex', 
+        justifyContent: 'center', 
+        gap: isMobile ? 4 : 8 
+      }}>
         <select
           size={1}
           value={year}
@@ -305,10 +321,12 @@ const EmotionCalendar: React.FC<EmotionCalendarProps> = ({
             onChange(newValue);
           }}
           style={{ 
-            padding: '4px 8px',
+            padding: isMobile ? '2px 4px' : '4px 8px',
             border: '1px solid #d9d9d9',
             borderRadius: 4,
-            backgroundColor: '#fff'
+            backgroundColor: '#fff',
+            fontSize: isMobile ? '12px' : '14px',
+            width: isMobile ? '60px' : 'auto'
           }}
         >
           {options}
@@ -322,10 +340,12 @@ const EmotionCalendar: React.FC<EmotionCalendarProps> = ({
             onChange(newValue);
           }}
           style={{ 
-            padding: '4px 8px',
+            padding: isMobile ? '2px 4px' : '4px 8px',
             border: '1px solid #d9d9d9',
             borderRadius: 4,
-            backgroundColor: '#fff'
+            backgroundColor: '#fff',
+            fontSize: isMobile ? '12px' : '14px',
+            width: isMobile ? '50px' : 'auto'
           }}
         >
           {monthOptions}
@@ -338,18 +358,29 @@ const EmotionCalendar: React.FC<EmotionCalendarProps> = ({
     <Card 
       className={className}
       title={
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Title level={4} style={{ margin: 0 }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: isMobile ? 'flex-start' : 'center',
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? '8px' : '0'
+        }}>
+          <Title level={isMobile ? 5 : 4} style={{ margin: 0 }}>
             {title}
           </Title>
           
           {/* 图例 */}
-          <div style={{ display: 'flex', gap: 16, fontSize: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ 
+            display: 'flex', 
+            gap: isMobile ? 8 : 16, 
+            fontSize: isMobile ? '10px' : '12px',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <div 
                 style={{
-                  width: 8,
-                  height: 8,
+                  width: isMobile ? 6 : 8,
+                  height: isMobile ? 6 : 8,
                   borderRadius: '50%',
                   backgroundColor: '#52c41a',
                   opacity: 0.4
@@ -357,11 +388,11 @@ const EmotionCalendar: React.FC<EmotionCalendarProps> = ({
               />
               <span>低强度</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <div 
                 style={{
-                  width: 8,
-                  height: 8,
+                  width: isMobile ? 6 : 8,
+                  height: isMobile ? 6 : 8,
                   borderRadius: '50%',
                   backgroundColor: '#52c41a',
                   opacity: 0.7
@@ -369,11 +400,11 @@ const EmotionCalendar: React.FC<EmotionCalendarProps> = ({
               />
               <span>中强度</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <div 
                 style={{
-                  width: 8,
-                  height: 8,
+                  width: isMobile ? 6 : 8,
+                  height: isMobile ? 6 : 8,
                   borderRadius: '50%',
                   backgroundColor: '#52c41a',
                   opacity: 1.0
@@ -420,7 +451,7 @@ const EmotionCalendar: React.FC<EmotionCalendarProps> = ({
         mode="month"
         style={{ 
           width: '100%',
-          minHeight: size === 'small' ? 300 : size === 'medium' ? 350 : 400
+          minHeight: actualSize === 'small' ? 300 : actualSize === 'medium' ? 350 : 400
         }}
       />
       
