@@ -8,7 +8,13 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint . --ext ts,tsx --fix"
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "serve": "serve -s dist -l 3000",
+    "start": "npm run serve",
+    "deploy": "npm run build && npm run serve",
+    "docker:build": "docker build -t ruma-demo .",
+    "docker:run": "docker run -d -p 80:80 --name ruma-demo-app ruma-demo",
+    "docker:stop": "docker stop ruma-demo-app && docker rm ruma-demo-app"
   },
   "dependencies": {
     "@types/d3": "^7.4.3",
@@ -43,6 +49,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "postcss": "^8.4.32",
+    "serve": "^14.2.1",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.2.2",
     "vite": "^5.0.8"

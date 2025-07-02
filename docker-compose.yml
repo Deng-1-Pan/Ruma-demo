@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  ruma-demo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ruma-demo-app
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - ruma-network
+
+networks:
+  ruma-network:
+    driver: bridge 
