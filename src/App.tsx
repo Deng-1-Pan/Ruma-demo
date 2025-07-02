@@ -1,16 +1,30 @@
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, Spin } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import './App.css';
 
-// Pages
-import ChatPage from './pages/ChatPage';
-import HistoryPage from './pages/HistoryPage';
-import EmotionAnalysisPage from './pages/EmotionAnalysisPage';
+// 懒加载页面组件
+import { lazy } from 'react';
+
+const ChatPage = lazy(() => import('./pages/ChatPage'));
+const HistoryPage = lazy(() => import('./pages/HistoryPage'));
+const EmotionAnalysisPage = lazy(() => import('./pages/EmotionAnalysisPage'));
 
 // Auth
 import { useUserActions } from './stores/userStore';
+
+// 加载组件
+const LoadingComponent = () => (
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    height: '100vh' 
+  }}>
+    <Spin size="large" tip="加载中..." />
+  </div>
+);
 
 // DemoAuthProvider组件 - 演示版自动设置已登录状态
 const DemoAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -47,12 +61,14 @@ const App: React.FC = () => {
       <Router>
         <DemoAuthProvider>
           <div className="App">
-            <Routes>
-              <Route path="/" element={<ChatPage />} />
-              <Route path="/chat" element={<ChatPage />} />
-              <Route path="/history" element={<HistoryPage />} />
-              <Route path="/emotion-analysis" element={<EmotionAnalysisPage />} />
-            </Routes>
+            <Suspense fallback={<LoadingComponent />}>
+              <Routes>
+                <Route path="/" element={<ChatPage />} />
+                <Route path="/chat" element={<ChatPage />} />
+                <Route path="/history" element={<HistoryPage />} />
+                <Route path="/emotion-analysis" element={<EmotionAnalysisPage />} />
+              </Routes>
+            </Suspense>
           </div>
         </DemoAuthProvider>
       </Router>

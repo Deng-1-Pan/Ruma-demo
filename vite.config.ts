@@ -26,6 +26,25 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          antd: ['antd'],
+          charts: ['echarts', 'echarts-for-react', 'd3'],
+          plotly: ['plotly.js-dist-min', 'react-plotly.js']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000,
+    reportCompressedSize: false
   }
 }) 
