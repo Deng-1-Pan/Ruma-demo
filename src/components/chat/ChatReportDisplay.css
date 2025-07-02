@@ -1,0 +1,242 @@
+.chat-report-display {
+  margin: 24px 0;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.report-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e6f7ff;
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.report-icon {
+  color: #1890ff;
+  font-size: 18px;
+}
+
+
+
+.summary-section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  color: #1890ff;
+  margin-bottom: 12px !important;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-card {
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+}
+
+.summary-text {
+  margin: 0;
+  color: #595959;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+/* Markdown渲染样式 */
+.summary-text h1,
+.summary-text h2,
+.summary-text h3,
+.summary-text h4,
+.summary-text h5,
+.summary-text h6 {
+  color: #1890ff;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.summary-text h1 { font-size: 20px; }
+.summary-text h2 { font-size: 18px; }
+.summary-text h3 { font-size: 16px; }
+.summary-text h4 { font-size: 15px; }
+
+.summary-text p {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+.summary-text strong {
+  color: #262626;
+  font-weight: 600;
+}
+
+.summary-text em {
+  color: #8c8c8c;
+  font-style: italic;
+}
+
+.summary-text ul,
+.summary-text ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.summary-text li {
+  margin: 4px 0;
+  line-height: 1.5;
+}
+
+.summary-text blockquote {
+  margin: 12px 0;
+  padding: 8px 16px;
+  border-left: 4px solid #1890ff;
+  background-color: #f6ffed;
+  color: #595959;
+  font-style: italic;
+}
+
+.summary-text code {
+  background-color: #f5f5f5;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #d4380d;
+}
+
+.summary-text pre {
+  background-color: #f5f5f5;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 12px 0;
+  overflow-x: auto;
+}
+
+.summary-text pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #262626;
+}
+
+.summary-text a {
+  color: #1890ff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.summary-text a:hover {
+  color: #40a9ff;
+  text-decoration: underline;
+}
+
+.summary-text hr {
+  border: none;
+  border-top: 1px solid #d9d9d9;
+  margin: 16px 0;
+}
+
+.chart-section {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #f0f0f0;
+  height: 100%;
+}
+
+.causes-section {
+  margin-top: 24px;
+}
+
+.causes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cause-card {
+  background: #f6ffed;
+  border: 1px solid #d9f7be;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.cause-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cause-card .ant-card-body {
+  padding: 12px 16px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .chat-report-display {
+    margin: 16px 0;
+  }
+  
+  .report-card {
+    border-radius: 8px;
+  }
+  
+  .chart-section {
+    padding: 12px;
+  }
+  
+  .summary-text {
+    font-size: 14px;
+  }
+  
+  .section-title {
+    font-size: 16px !important;
+  }
+}
+
+/* 深色模式适配 */
+@media (prefers-color-scheme: dark) {
+  .report-card {
+    background: linear-gradient(135deg, #1f1f1f 0%, #2a2a2a 100%);
+    border-color: #434343;
+  }
+  
+  .summary-card {
+    background: #262626;
+    border-color: #434343;
+  }
+  
+  .summary-text {
+    color: #d9d9d9;
+  }
+  
+  .chart-section {
+    background: #1f1f1f;
+    border-color: #434343;
+  }
+  
+  .cause-card {
+    background: #162312;
+    border-color: #389e0d;
+  }
+} 

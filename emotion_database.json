@@ -1,0 +1,872 @@
+[
+    {
+        "emotion_id": 1,
+        "emotion": "Happiness",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 2,
+        "emotion": "Satisfaction",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 3,
+        "emotion": "Joy",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 4,
+        "emotion": "Loss",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 5,
+        "emotion": "Loneliness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 6,
+        "emotion": "Depression",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 7,
+        "emotion": "Despair",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 8,
+        "emotion": "Irritability",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 9,
+        "emotion": "Indignation",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 10,
+        "emotion": "Excitement",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 11,
+        "emotion": "Anger",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 12,
+        "emotion": "Anxiety",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 13,
+        "emotion": "Fear",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 14,
+        "emotion": "Panic",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 15,
+        "emotion": "Sense of Fear",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 16,
+        "emotion": "Shock",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 17,
+        "emotion": "Confusion",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 18,
+        "emotion": "Unexpected",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 19,
+        "emotion": "Amazement",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 20,
+        "emotion": "Dislike",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 21,
+        "emotion": "Aversion",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 22,
+        "emotion": "Dissatisfaction",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 23,
+        "emotion": "Annoyance",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 24,
+        "emotion": "Sense of Security",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 25,
+        "emotion": "Dependence",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 26,
+        "emotion": "Loyalty",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 27,
+        "emotion": "Peace of Mind",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 28,
+        "emotion": "Hope",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 29,
+        "emotion": "Desire",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 30,
+        "emotion": "Excitement",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 31,
+        "emotion": "Expectation",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 32,
+        "emotion": "Guilt",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 33,
+        "emotion": "Embarrassment",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 34,
+        "emotion": "Regret",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 35,
+        "emotion": "Shamefulness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 36,
+        "emotion": "Sense of Achievement",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 37,
+        "emotion": "Pride",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 38,
+        "emotion": "Satisfaction",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 39,
+        "emotion": "Confidence",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 40,
+        "emotion": "Tension",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 41,
+        "emotion": "Unease",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 42,
+        "emotion": "Worry",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 43,
+        "emotion": "Trouble",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 44,
+        "emotion": "Helplessness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 45,
+        "emotion": "Loss of Interest",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 46,
+        "emotion": "Despair",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 47,
+        "emotion": "Dejection",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 48,
+        "emotion": "Tranquility",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 49,
+        "emotion": "Relaxation",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 50,
+        "emotion": "Serenity",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 51,
+        "emotion": "Comfort",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 52,
+        "emotion": "Bewilderment",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 53,
+        "emotion": "Doubt",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 54,
+        "emotion": "Helplessness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 55,
+        "emotion": "Tiredness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 56,
+        "emotion": "Exhaustion",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 57,
+        "emotion": "Weakness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 58,
+        "emotion": "Isolation",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 59,
+        "emotion": "Separation",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 60,
+        "emotion": "Neglect",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 61,
+        "emotion": "Yearning",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 62,
+        "emotion": "Pursuit",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 63,
+        "emotion": "Aspiration",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 64,
+        "emotion": "Unease",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 65,
+        "emotion": "Fear",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 66,
+        "emotion": "Loss of Control",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 67,
+        "emotion": "Stability",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 68,
+        "emotion": "Relief",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 69,
+        "emotion": "Comfort",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 70,
+        "emotion": "Thanks",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 71,
+        "emotion": "Appreciation",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 72,
+        "emotion": "Contentment",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 73,
+        "emotion": "Displeased",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 74,
+        "emotion": "Uncertainty",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 75,
+        "emotion": "Pain",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 76,
+        "emotion": "Interest",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 77,
+        "emotion": "Disappointment",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 78,
+        "emotion": "Gratification",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 79,
+        "emotion": "Glee",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 80,
+        "emotion": "Playfulness",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 81,
+        "emotion": "Grief",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 82,
+        "emotion": "Lament",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 83,
+        "emotion": "Melancholy",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 84,
+        "emotion": "Humiliation",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 85,
+        "emotion": "Hostility",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 86,
+        "emotion": "Jealousy",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 87,
+        "emotion": "Hatred",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 88,
+        "emotion": "Irritation",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 89,
+        "emotion": "Panic",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 90,
+        "emotion": "Startle",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 91,
+        "emotion": "Phobia",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 92,
+        "emotion": "Amazement",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 93,
+        "emotion": "Bewilderment",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 94,
+        "emotion": "Rejection",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 95,
+        "emotion": "Contempt",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 96,
+        "emotion": "Moral disgust",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 97,
+        "emotion": "Nausea",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 98,
+        "emotion": "Self-disgust",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 99,
+        "emotion": "Guilt-like Shame",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 100,
+        "emotion": "Exposure",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 101,
+        "emotion": "Embarrassment",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 102,
+        "emotion": "Remorse",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 103,
+        "emotion": "Self-blame",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 104,
+        "emotion": "Contrition",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 105,
+        "emotion": "Regret",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 106,
+        "emotion": "Moral Wrongness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 107,
+        "emotion": "Self-respect",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 108,
+        "emotion": "Glory",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 109,
+        "emotion": "Admiration",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 110,
+        "emotion": "Thankfulness",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 111,
+        "emotion": "Feeling remembered",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 112,
+        "emotion": "Cared for",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 113,
+        "emotion": "Possessiveness",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 114,
+        "emotion": "Injustice",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 115,
+        "emotion": "Threat",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 116,
+        "emotion": "Assurance",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 117,
+        "emotion": "Dependability",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 118,
+        "emotion": "Understanding",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 119,
+        "emotion": "Acceptance",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 120,
+        "emotion": "Sense of safety",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 121,
+        "emotion": "Care",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 122,
+        "emotion": "Tenderness",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 123,
+        "emotion": "Intimacy",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 124,
+        "emotion": "Worship",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 125,
+        "emotion": "Appreciation",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 126,
+        "emotion": "Protective instinct",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 127,
+        "emotion": "Commitment",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 128,
+        "emotion": "Neededness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 129,
+        "emotion": "Likedness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 130,
+        "emotion": "Curiosity",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 131,
+        "emotion": "Dread",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 132,
+        "emotion": "Fear of missing out",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 133,
+        "emotion": "Imbalance",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 134,
+        "emotion": "Threshold anxiety",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 135,
+        "emotion": "Indecision",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 136,
+        "emotion": "Relief",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 137,
+        "emotion": "Uncertainty drift",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 138,
+        "emotion": "Lack of orientation",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 139,
+        "emotion": "Victory",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 140,
+        "emotion": "Inferiority",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 141,
+        "emotion": "Self-Doubt",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 142,
+        "emotion": "Inner Conflict",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 143,
+        "emotion": "Emptiness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 144,
+        "emotion": "Belongingness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 145,
+        "emotion": "Misrepresentation",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 146,
+        "emotion": "Fragmentation",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 147,
+        "emotion": "Identity Crisis",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 148,
+        "emotion": "Doubted",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 149,
+        "emotion": "Labeled",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 150,
+        "emotion": "Tranquility",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 151,
+        "emotion": "Cool-headedness",
+        "emotion_label": "Active"
+    },
+    {
+        "emotion_id": 152,
+        "emotion": "Harmony",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 153,
+        "emotion": "Emotional Numbness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 154,
+        "emotion": "Blankness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 155,
+        "emotion": "Meaninglessness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 156,
+        "emotion": "Apathy",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 157,
+        "emotion": "Emotional inertia",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 158,
+        "emotion": "Mental idling",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 159,
+        "emotion": "Absurdity",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 160,
+        "emotion": "Nihilism",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 161,
+        "emotion": "Lack of Purpose",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 162,
+        "emotion": "Passingness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 163,
+        "emotion": "Replaceability",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 164,
+        "emotion": "Self-dissolution",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 165,
+        "emotion": "Digital detachment",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 166,
+        "emotion": "Weakness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 167,
+        "emotion": "Cold Sweat",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 168,
+        "emotion": "Palpitations",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 169,
+        "emotion": "Shortness of Breath",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 170,
+        "emotion": "Queasiness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 171,
+        "emotion": "Weeping",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 172,
+        "emotion": "Trembling",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 173,
+        "emotion": "Withdrawnness",
+        "emotion_label": "Passive"
+    },
+    {
+        "emotion_id": 174,
+        "emotion": "Blank-out",
+        "emotion_label": "Passive"
+    }
+]

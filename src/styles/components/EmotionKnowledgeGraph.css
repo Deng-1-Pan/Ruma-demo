@@ -1,0 +1,45 @@
+.emotion-knowledge-graph {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.emotion-knowledge-graph .ant-card {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+.emotion-knowledge-graph .ant-card-body {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 24px !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.emotion-knowledge-graph .graph-container {
+  flex: 1 !important;
+  width: 100% !important;
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.emotion-knowledge-graph .svg-container {
+  border: 1px solid #d9d9d9 !important;
+  border-radius: 4px !important;
+  width: 100% !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+}
+
+.emotion-knowledge-graph .emotion-graph-svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  min-height: 400px !important;
+} 

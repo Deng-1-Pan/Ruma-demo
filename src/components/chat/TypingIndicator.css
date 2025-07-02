@@ -1,0 +1,191 @@
+.typing-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--success-color);
+  border-radius: 50%;
+  animation: typing-dot 1.4s infinite ease-in-out;
+}
+
+.typing-dot-1 {
+  animation-delay: 0s;
+}
+
+.typing-dot-2 {
+  animation-delay: 0.2s;
+}
+
+.typing-dot-3 {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing-dot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+}
+
+.emotion-ripple-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+}
+
+.emotion-ripple-center {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #52c41a 0%, #1890ff 50%, #722ed1 100%);
+  box-shadow: 0 2px 8px rgba(82, 196, 26, 0.3);
+}
+
+.emotion-ripple-wave {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background: linear-gradient(135deg, 
+    rgba(82, 196, 26, 0.6) 0%, 
+    rgba(24, 144, 255, 0.4) 50%, 
+    rgba(114, 46, 209, 0.3) 100%
+  );
+  background-clip: padding-box;
+  pointer-events: none;
+}
+
+.emotion-ripple-wave-1 {
+  animation: emotion-ripple 1.8s infinite ease-out;
+  animation-delay: 0s;
+}
+
+.emotion-ripple-wave-2 {
+  animation: emotion-ripple 1.8s infinite ease-out;
+  animation-delay: 0.3s;
+}
+
+.emotion-ripple-wave-3 {
+  animation: emotion-ripple 1.8s infinite ease-out;
+  animation-delay: 0.6s;
+}
+
+@keyframes emotion-ripple {
+  0% {
+    width: 40px;
+    height: 40px;
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    width: 80px;
+    height: 80px;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.4);
+  }
+}
+
+.emotion-breathing {
+  animation: gentle-breathing 2.4s infinite ease-in-out;
+}
+
+@keyframes gentle-breathing {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.emotion-status-text {
+  background: linear-gradient(135deg, #52c41a 0%, #1890ff 50%, #722ed1 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 500;
+  animation: text-shimmer 2s infinite ease-in-out;
+}
+
+@keyframes text-shimmer {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .emotion-ripple-container {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .emotion-ripple-center {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .emotion-ripple-wave-1,
+  .emotion-ripple-wave-2,
+  .emotion-ripple-wave-3 {
+    animation-duration: 1.5s;
+  }
+  
+  @keyframes emotion-ripple {
+    0% {
+      width: 30px;
+      height: 30px;
+      opacity: 0.8;
+      transform: translate(-50%, -50%) scale(0.8);
+    }
+    100% {
+      width: 60px;
+      height: 60px;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(1.4);
+    }
+  }
+}
+
+.typing-indicator {
+  transition: all 0.3s ease-in-out;
+}
+
+.typing-indicator.fade-in {
+  animation: fade-in-up 0.4s ease-out;
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 

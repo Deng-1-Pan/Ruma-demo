@@ -1,0 +1,210 @@
+/* Tailwind CSS基础样式 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+              'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* 主色调 - 温暖安全感 */
+  --primary-color: #1890ff;
+  --primary-hover: #40a9ff;
+  --primary-light: #e6f7ff;
+  --primary-dark: #096dd9;
+
+  /* 功能色彩 */
+  --success-color: #52c41a;
+  --success-light: #f6ffed;
+  --warning-color: #faad14;
+  --warning-light: #fff7e6;
+  --error-color: #ff4d4f;
+  --error-light: #fff2f0;
+
+  /* 中性色 */
+  --text-primary: #262626;
+  --text-secondary: #8c8c8c;
+  --text-tertiary: #bfbfbf;
+  --text-quaternary: #d9d9d9;
+  
+  /* 边框和背景色 */
+  --border-color: #d9d9d9;
+  --border-light: #f0f0f0;
+  --background: #f5f5f5;
+  --surface: #ffffff;
+  --surface-hover: #fafafa;
+
+  /* 字体大小 */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 24px;
+  --font-size-xxl: 32px;
+
+  /* 间距系统 */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+
+  /* 圆角 */
+  --border-radius-sm: 4px;
+  --border-radius-base: 6px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+
+  /* 阴影 */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-base: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  /* 动画 */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-base: 0.3s ease-in-out;
+  --transition-slow: 0.5s ease-in-out;
+
+  /* 响应式断点 */
+  --breakpoint-xs: 576px;
+  --breakpoint-sm: 768px;
+  --breakpoint-md: 992px;
+  --breakpoint-lg: 1200px;
+  --breakpoint-xl: 1400px;
+
+  /* 聊天界面专用变量 */
+  --chat-sidebar-width: 280px;
+  --chat-header-height: 64px;
+  --chat-input-height: auto;
+  --message-max-width: 70%;
+  --avatar-size: 40px;
+  --avatar-size-sm: 32px;
+
+  /* 情绪色彩 */
+  --emotion-positive: #52c41a;
+  --emotion-negative: #ff4d4f;
+  --emotion-neutral: #8c8c8c;
+  --emotion-excited: #faad14;
+  --emotion-calm: #1890ff;
+}
+
+/* 暗色主题 */
+[data-theme="dark"] {
+  --text-primary: #ffffff;
+  --text-secondary: #bfbfbf;
+  --text-tertiary: #8c8c8c;
+  --text-quaternary: #595959;
+  
+  --border-color: #434343;
+  --border-light: #303030;
+  --background: #141414;
+  --surface: #1f1f1f;
+  --surface-hover: #262626;
+
+  --primary-light: #111a2c;
+  --success-light: #162312;
+  --warning-light: #2b2111;
+  --error-light: #2a1215;
+}
+
+/* 全局样式重置 */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: var(--background);
+  color: var(--text-primary);
+}
+
+#root {
+  height: 100%;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--border-light);
+  border-radius: var(--border-radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--border-radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* 响应式工具类 */
+@media (max-width: 576px) {
+  :root {
+    --chat-sidebar-width: 0px;
+  }
+}
+
+@media (min-width: 577px) and (max-width: 992px) {
+  :root {
+    --chat-sidebar-width: 200px;
+  }
+}
+
+/* 动画关键帧 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* 工具类 */
+.fade-in {
+  animation: fadeIn var(--transition-base);
+}
+
+.slide-in {
+  animation: slideIn var(--transition-base);
+}
+
+.pulse {
+  animation: pulse 1.5s infinite;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background);
+  color: var(--text-primary);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.App {
+  min-height: 100vh;
+} 
