@@ -22,6 +22,6 @@ app.listen(PORT, HOST, () => {
   console.log(`   Local:   http://localhost:${PORT}`);
   console.log(`   Network: http://${HOST}:${PORT}`);
   console.log(`   
-   📱 Mobile & Other Devices: http://8.149.247.69:${PORT}`);
+   📱 Mobile & Other Devices: http://47.110.231.103:${PORT}`);
   console.log('\n✨ Ready to serve your React app!');
 }); 

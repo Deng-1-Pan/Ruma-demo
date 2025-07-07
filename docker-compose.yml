@@ -2,7 +2,7 @@ services:
   ruma-demo:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.china
     container_name: ruma-demo-app
     ports:
       - "80:80"
