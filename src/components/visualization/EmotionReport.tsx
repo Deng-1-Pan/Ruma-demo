@@ -392,7 +392,6 @@ const EmotionReport: React.FC<EmotionReportProps> = ({
               <EmotionDistribution 
                 data={data.distribution}
                 title={isMobile ? "分布" : "情绪分布"}
-                height={isMobile ? 600 : componentConfig.chart.height}
                 timeRange={currentTimeRange}
                 onTimeRangeChange={handleTimeRangeChange}
                 useOSSData={false}

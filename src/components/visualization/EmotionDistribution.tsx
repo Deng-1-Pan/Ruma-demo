@@ -367,16 +367,16 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
           </Space>
         </div>
       ) : title}
-      style={{ height }}
+      style={{ width: '100%' }}
     >
-      <div style={{ height: showControls ? height - 60 : height - 40 }}>
+      <div style={{ width: '100%' }}>
         {totalCount === 0 ? (
           // 🎯 没有数据时的显示：保持时间选择器可见
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center', 
-            height: '100%',
+            height: isMobile ? '250px' : '300px',
             flexDirection: 'column',
             color: 'var(--text-secondary)'
           }}>
@@ -423,7 +423,7 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
             )}
             
             {/* 图表区域 - 移除右边的情绪详情，饼图占满整个区域 */}
-            <div style={{ height: showStats ? (isMobile ? height - 280 : height - 160) : (isMobile ? height - 200 : height - 80) }}>
+            <div style={{ height: isMobile ? '350px' : '400px', width: '100%' }}>
               <ReactECharts 
                 option={chartOption} 
                 style={{ height: '100%', width: '100%' }}
@@ -435,7 +435,8 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
             {distributionData.length > 1 && (
               <div style={{ 
                 marginTop: isMobile ? '20px' : '16px',
-                paddingBottom: isMobile ? '20px' : '10px'
+                paddingBottom: isMobile ? '20px' : '10px',
+                zIndex: 1 // 确保详情列表在正确的层级
               }}>
                 <Title level={5} style={{ 
                   marginBottom: isMobile ? '12px' : '12px', 
@@ -448,12 +449,14 @@ const EmotionDistribution: React.FC<EmotionDistributionProps> = ({
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '6px',
-                  height: isMobile ? '180px' : '120px',
+                  maxHeight: isMobile ? '300px' : '150px', // 使用最大高度，允许内容自适应
                   overflowY: 'auto',
                   marginBottom: isMobile ? '16px' : '0px',
                   border: isMobile ? '1px solid #f0f0f0' : 'none',
                   borderRadius: isMobile ? '6px' : '0px',
-                  padding: isMobile ? '8px' : '0px'
+                  padding: isMobile ? '8px' : '0px',
+                  position: 'relative', // 确保定位正确
+                  zIndex: 1 // 确保列表在正确的层级
                 }}>
                   {distributionData.map((item) => (
                     <div 
